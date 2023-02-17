@@ -1,6 +1,6 @@
 # Instructions
 
-### Demo 1 Set-up your development environment
+### Demo 1 Set up your development environment
 - Open a browser and navigate to https://visualstudio.microsoft.com/
 - Scroll down, and choose the version you wish to install
     - Recommended is Visual Studio Community
@@ -29,7 +29,7 @@
         - Verify that the application is running on Localhost
     - Refer to this CLI command cheat sheet for a guide to different commands: [dotnet cli Cheat Sheet by oba](https://cheatography.com/oba/cheat-sheets/dotnet-cli/)
 
-### Demo 2 Sign-up for GitHub
+### Demo 2 Sign up for GitHub
 - Refer to the following video [GitHub Desktop Tutorial - How to install and create a new repository in GitHub using GitHub Desktop?](https://www.youtube.com/watch?v=sObZ61W66GU)
 - Open a browser and navigate to https://desktop.github.com/
     - Download the latest version
