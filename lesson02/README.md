@@ -1,0 +1,80 @@
+# Instructions
+
+### Demo 1 Creating a your first VS Solution
+
+- If you chose Visual Studio Community (Windows or Mac)
+    - Open Visual Studio
+    - Click on Create New Project
+    - In the 'Create a new project' window:
+        - Filter projects by language (C#) and type (Web)
+        - Select ASP.NET Core Web App (Model-View-Controller)
+        - Click Next
+    - In the 'Configure your new project' window:
+        - Set Project Name to MyWebApp
+        - Set locations to a folder where you keep your source code
+        - Set Solution Name to MyWebAppSolution
+        - Click Next
+    - In the 'Additional Information' window:
+        - Select latest Long Term Support Framework
+        - Set Authentication Type as 'none'
+        - Click Create
+    - Wait for VS to finish creating the solution
+    - Run the application by clicking on the green 'play' menu at the top
+    - Verify application is running on Localhost
+- If you chose Visual Studio Code (Linux)
+    - Create a new folder in your computer and name it MyWebApp
+    - Open Visual Studio Code
+    - Click File > Open Folder and select the empty folder in your computer
+    - Click on Terminal > New Terminal and run the following command
+        - dotnet new mvc
+    - Wait for the command above to complete, and verify that the project files where generated successfully
+    - Back on the terminal, run the following command
+        - dotnet run
+    - Verify that the application is running on Localhost
+    - Refer to this CLI command cheat sheet for a guide to different commands https://cheatography.com/oba/cheat-sheets/dotnet-cli/
+- For both, go back to the project and examine the following files and folders:
+    - Controllers
+    - Views
+    - Models
+    - Program.cs
+    - Appsettings.json
+
+### Demo 2 Creating our Demo Application (DotNetGrill)
+
+- If you chose Visual Studio Community (Windows or Mac)
+    - Open Visual Studio
+    - Click on Create New Project
+    - In the 'Create a new project' window:
+        - Filter projects by language (C#) and type (Web)
+        - Select ASP.NET Core Web App (Model-View-Controller)
+        - Click Next
+    - In the 'Configure your new project' window:
+        - Set Project Name to DotNetGrill
+        - Set locations to a folder where you keep your source code
+        - Set Solution Name to DotNetGrill
+        - Click Next
+    - In the 'Additional Information' window:
+        - Select latest Long Term Support Framework
+        - Set Authentication Type as 'Individual Accounts'
+        - Click Create
+    - Wait for VS to finish creating the solution
+    - Run the application by clicking on the green 'play' menu at the top
+    - Verify application is running on Localhost
+- If you chose Visual Studio Code (Linux)
+    - Create a new folder in your computer and name it DotNetGrill
+    - Open Visual Studio Code
+    - Click File > Open Folder and select the empty folder in your computer
+    - Click on Terminal > New Terminal and run the following command
+        - dotnet new mvc --auth Individual
+    - Wait for the command above to complete, and verify that the project files where generated successfully
+    - Back on the terminal, run the following command
+        - dotnet run
+    - Verify that the application is running on Localhost
+    - Refer to this CLI command cheat sheet for a guide to different commands https://cheatography.com/oba/cheat-sheets/dotnet-cli/
+- Open /Views/Shared/_Layout.cshtml
+    - Replace the year in the footer to @DateTime.Now.Year.ToString() in order to make it dynamic
+- Open /Views/Home/Index.cshtml
+    - Replace the Welcome message
+    - Replace the \<p> element with a bit more information about your restaurant
+    - Add a new header and add the name of your main chef
+    - Add a new paragraph element and add the bio of your main chef
