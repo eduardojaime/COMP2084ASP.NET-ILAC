@@ -42,7 +42,7 @@
     - Update-Database
 - Alternatively, connect to your database using MSSQL Management Studio or Azure Data Studio to verify that the corresponding tables were created in the database
 
-### Demo 4 Protecting your connection string by adding them to a secret store
+### Demo 4 Protecting your connection string by adding it to a secret store
 - Open the Package Manager Console
 - Navigate to your project folder
     - Dir
