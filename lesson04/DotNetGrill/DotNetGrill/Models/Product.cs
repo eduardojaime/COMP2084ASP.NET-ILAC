@@ -12,7 +12,8 @@ namespace DotNetGrill.Models
         [DisplayFormat(DataFormatString = "{0:c}")]  // MS Currency format
         public decimal Price { get; set; }
         public int Rating { get; set; }
-        public string Photo { get; set; }
+        // make sure to add ? to make fields nullable and therefore no required
+        public string? Photo { get; set; }
         // Navigation M to 1 > every product has only one category
         public int CategoryId { get; set; }
         // Connects the related entity as an attribute
