@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using DotNetGrill.Data;
 using DotNetGrill.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DotNetGrill.Controllers
 {
@@ -102,6 +103,39 @@ namespace DotNetGrill.Controllers
             _context.SaveChanges();
             // redirect back to cart page
             return RedirectToAction("Cart");
+        }
+
+        // GET handler for /Store/Checkout
+        [Authorize]
+        public IActionResult Checkout()
+        {
+            return View();
+        }
+
+        // POST handler for /Store/Checkout
+        // POST is triggered by button inside a form
+        [HttpPost]
+        [ValidateAntiForgeryToken] // for security
+        [Authorize]
+        public IActionResult Checkout([Bind("FirstName,LastName,Address,City,Province,PostalCode")] DotNetGrill.Models.Order order)
+        {
+            // populate the 3 special order properties: Date, CustomerId, Total
+            order.DateCreated = DateTime.UtcNow;
+            order.CustomerId = GetCustomerId();
+            // calculate total
+            var carts = _context.Carts
+                        .Include(c => c.Product) // include every product connected to a cart, similar to JOIN in SQL
+                        .Where(c => c.CustomerId == GetCustomerId())
+                        .OrderByDescending(c => c.DateCreated)
+                        .ToList();
+            var total = carts.Sum(c => c.Price);
+            order.Total = total;
+
+            // store in session object to hold this order temporarily until payment is made
+            HttpContext.Session.SetObject("Order", order);
+
+            // redirect to Payment page
+            return RedirectToAction("Payment");
         }
 
         /// <summary>
