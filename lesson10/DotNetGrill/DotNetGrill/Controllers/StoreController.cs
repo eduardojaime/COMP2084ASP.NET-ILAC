@@ -77,10 +77,31 @@ namespace DotNetGrill.Controllers
             string customerId = GetCustomerId();
             // return a list of elements in the carts table by customerId
             var carts = _context.Carts
+                        .Include(c => c.Product) // include every product connected to a cart, similar to JOIN in SQL
                         .Where(c => c.CustomerId == customerId)
                         .OrderByDescending(c => c.DateCreated)
                         .ToList();
+
+            // pass single value to view with the viewbag object
+            // use LINQ methods to calculate sums and averages and other operations easily
+            var total = carts.Sum(c => c.Price).ToString("C");
+            ViewBag.TotalAmount = total; // Viewbag object is dynamic, after this line of code "TotalAmount" will be available to the app
+
             return View(carts);
+        }
+
+        // GET handler for /Store/RemoveFromCart
+        public IActionResult RemoveFromCart(int id)
+        {
+            // Remove with LINQ
+            // Retrieve element that you want to delete
+            var cartItem = _context.Carts.Find(id);
+            // Call .remove() from the dbset
+            _context.Carts.Remove(cartItem);
+            // save changes
+            _context.SaveChanges();
+            // redirect back to cart page
+            return RedirectToAction("Cart");
         }
 
         /// <summary>
