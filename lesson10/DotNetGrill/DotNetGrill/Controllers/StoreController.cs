@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using DotNetGrill.Data;
 using DotNetGrill.Models;
 using Microsoft.AspNetCore.Authorization;
+using DotNetGrill.Extensions;
 
 namespace DotNetGrill.Controllers
 {
