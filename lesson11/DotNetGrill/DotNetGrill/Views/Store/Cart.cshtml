@@ -1,0 +1,54 @@
+﻿@model IEnumerable<DotNetGrill.Models.Cart>
+
+@{
+    ViewData["Title"] = "Cart";
+}
+
+<h1>Your Cart</h1>
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Product)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Price)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Quantity)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    <a asp-controller="Products" asp-action="Details" asp-route-id="@item.ProductId">
+                        @item.Product.Name
+                    </a>
+                </td>
+                <td class="text-right">
+                    @item.Price.ToString("C")
+                </td>
+                <td class="text-right">
+                    @Html.DisplayFor(modelItem => item.Quantity)
+                </td>
+                <td>
+                    <a asp-action="RemoveFromCart" asp-route-id="@item.CartId">Delete</a>
+                </td>
+            </tr>
+        }
+        <tr>
+            <td colspan="2" class="text-right">Total:</td>
+            <td class="text-right">@ViewBag.TotalAmount</td>
+            <td></td>
+        </tr>
+    </tbody>
+</table>
+<div class="col-12 mb-auto text-info">
+    <a class="btn btn-primary" asp-action="Index">Continue Shopping</a>
+    <a class="btn btn-success" asp-action="Checkout">Checkout</a>
+</div>
