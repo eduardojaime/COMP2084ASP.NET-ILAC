@@ -1,6 +1,7 @@
 ﻿using DotNetGrill.Controllers;
 using DotNetGrill.Data;
 using DotNetGrill.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -40,9 +41,9 @@ namespace DotNetGrillTests
             _context.SaveChanges();
 
             // list of products
-            var product1 = new Product { ProductId = 1, Name = "Tacos", Category = category };
-            var product2 = new Product { ProductId = 2, Name = "Burritos", Category = category };
-            var product3 = new Product { ProductId = 3, Name = "Tamales", Category = category };
+            var product1 = new Product { ProductId = 1, Name = "Tacos", Description = "test", Category = category };
+            var product2 = new Product { ProductId = 2, Name = "Burritos", Description = "test", Category = category };
+            var product3 = new Product { ProductId = 3, Name = "Tamales", Description = "test", Category = category };
 
             // add products to mock dbs
             _context.Products.Add(product1);
@@ -58,6 +59,5 @@ namespace DotNetGrillTests
             // instantiate the controller object with mock db context
             _controller = new ProductsController(_context);
         }
-
     }
 }
