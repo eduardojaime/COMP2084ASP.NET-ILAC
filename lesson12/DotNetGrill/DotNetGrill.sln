@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33516.290
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetGrill", "DotNetGrill\DotNetGrill.csproj", "{3B4008A2-D2E3-486B-AE94-5BA82821C0F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetGrill", "DotNetGrill\DotNetGrill.csproj", "{3B4008A2-D2E3-486B-AE94-5BA82821C0F2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetGrillTests", "DotNetGrillTests\DotNetGrillTests.csproj", "{D2427C22-28C1-4DDE-A7FC-52F4A0BD6911}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{3B4008A2-D2E3-486B-AE94-5BA82821C0F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B4008A2-D2E3-486B-AE94-5BA82821C0F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B4008A2-D2E3-486B-AE94-5BA82821C0F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2427C22-28C1-4DDE-A7FC-52F4A0BD6911}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2427C22-28C1-4DDE-A7FC-52F4A0BD6911}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2427C22-28C1-4DDE-A7FC-52F4A0BD6911}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2427C22-28C1-4DDE-A7FC-52F4A0BD6911}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

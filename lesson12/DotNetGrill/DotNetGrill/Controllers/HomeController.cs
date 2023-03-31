@@ -20,7 +20,7 @@ namespace DotNetGrill.Controllers
 
         public IActionResult Privacy()
         {
-            return View();
+            return View("Privacy");
         }
 
         public IActionResult ContactUs()
