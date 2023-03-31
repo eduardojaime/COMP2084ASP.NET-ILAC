@@ -30,6 +30,14 @@ else
                     <img src="~/img/products/@product.Photo"
                          alt="Photo of @product.Name"
                          class="img-thumbnail" style="max-width: 250px;" />
+                    <form method="post" action="/Store/AddToCart">
+                        <input type="hidden" id="ProductId" name="ProductId" value="@product.ProductId" />
+                        <div>
+                            <label class="form-control" for="Quantity">Quantity: </label>
+                            <input name="Quantity" id="Quantity" required type="number" min="1" max="999" />
+                        </div>
+                        <button class="btn btn-primary">Add to Cart</button>
+                    </form>
                 </div>
             </div>
         </div>
