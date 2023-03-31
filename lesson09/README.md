@@ -1,6 +1,138 @@
 # Instructions
 
-### Demo 1 TITLE
+### Demo 1 Authorization using Roles
+- At this point in our application, anybody can create a user and manage our products/categories
+- We want to:
+    - Create two roles: Admin and Customer
+    - Have an admin account
+    - Modify the app to make any new user a Customer
+- Go to Blackboard and retrieve the SQL script to create two roles in the DB
+    - Open on SQL Management Studio or Azure Data Studio
+        - Check AspNetUsers, AspNetRoles, and AspNetRoles tables
+        - Run scripts accordingly
+- Open Program.cs
+    - services.AdddefaultIdentity<>().AddRoles<IdentityRole>().
+    - Save your changes, this configuring roles globally
+- Now, let's customize the registration page to create Admins accounts, specifically the code behind the Register button:
+    - Where are the Login/Register pages? These are hidden in the identity packages
+        - We need to add templates for custom management
+    - Go to /Areas/Identity
+        - Right click Pages > Add scaffolded item
+        - Choose Identity on the left, then Identity again (only option)
+        - Select pages we need > Account\Register
+        - Select Data Context Class > ApplicationDBContext
+        - Click Add
+        - Verify there's a folder called Accounts under /Areas/identity/Pages
+- Open /Areas/Identity/Pages/Account/Register.cshtml
+    - This file that contains the UI that we can now modify
+    - Under register, expand the node to find Register.cshtml.cs which is the code behind for the view
+    - Double click on it to open 
+        - Scroll down to the InputModel class
+            - See validation rules: email, password, and confirm password
+            - We can modify the password validation here if needed
+        - Search for the OnPostAsync method
+            - user and result are where the users actually get created
+                - var user = CreateUser();
+                - var result = await _userManager.CreateAsync(…)
+            - Modify the logic after 'if (result.Succeeded)'
+                - Save new user to Admin role by using _userManager.AddToRoleAsync()
+                - Two parameters:
+                    - User object we just created
+                    - Role name (string) that must match what's on the DB
+- Run the project:
+    - Go to register
+    - Create new account
+    - Open MSSQL Management Studio or Azure Data Studio and query the AspNetUserRoles table
+    - Verify that new user is linked to role id 1
+- Back to /Areas/Identity/Pages/Account/Register.cshtml.cs
+        - Modify the role name
+        - Register two more users
+        - Check AspNetUserRoles table > new users must be linked to role id 2
+- Our application is only implementing Authentication so for now any user in any role can access all the admin pages. We want to change these security rules:
+- Open /Views/Shared/_Layout.cshtml
+    - Modify User.Identity.IsAuthenticated to User.IsInRole("Administrator")
+        - Remember role names are case sensitive
+- Open /Controllers/Categories.cs
+    - Modify the Authorize attribute to include (Roles = "Administrator")
+    - Login is not sufficient for accessing this controller, user must be an administrator as well
+- Open /Controllers/Products.cs
+    - Modify the Authorize attribute to include (Roles = "Administrator")
+- Run the application
+    - Login as a customer
+    - Login as an admin
 
-- STEP 1
-    - STEP 2
+### Demo 2 Configuring Google Authentication
+- Run the application:
+    - Navigate to login
+    - Verify that there aren't any third party authentication mechanisms enabled
+- Open a browser and navigate to https://console.cloud.google.com
+    - Create a new project
+    - Select project to go to dashboard
+    - Click on Go to APIs & Services
+        - Click on Oauth consent screen
+            - Choose external
+            - Click Create
+            - Enter Application Name
+            - Leave the rest blank for now
+            - Click Save
+        - Click on Credentials
+            - Create Credentials 
+            - Choose Oauth Client ID
+            - Select Application Type > Web Application
+            - Enter a descriptive name
+            - In  'Authorized redirect URIs' section, click on Add URI 
+                - Provide the link to our signin page:
+                    - localhost:1234/signin-google
+                - This value has to be provided for your Azure website as well
+            - Click Create
+            - Copy API Keys (client id and client secret) displayed
+        - Noite: Might need to publish the consent page
+- Go back to Visual Studio
+    - In appsettings.json
+        - Create a section called Authentication for our Google Keys
+        - Inside, create a section called Google
+        - Inside, create two values:
+            - ClientId
+            - ClientSecret
+        - Copy the keys here
+    - Open Nuget Package Manager
+        - Search for Microsoft.AspNetCore.Authentication.Google
+        - Install latest version corresponding to the .NET version utilized in the project
+    - Open Program.cs
+        - Enable Google Authentication when our app starts
+        - Add a call to AddDefaultIdentity() method in the configure services section, pass clientId and clientSecret as options
+- Run the application and open on a browser
+    - Navigate to login
+    - Click Google
+    - Open MSSQL Management Studio or Azure Data Studio and verify the AspUserLogins table
+- Modify the registration page to create Admins accounts, specifically the code behind the Register button:
+    - Where are these? Login/Register pages are hidden by the identity packages
+        - We need to add templates for custom management
+    - Go to /Areas/Identity
+    - Right click Pages > Add scaffolded item
+    - Choose Identity on the left, then Identity again (only option)
+    - Select pages we need > ExternalLogin
+    - Select Data Context Class > ApplicationDBContext
+    - Scroll down to line 126 > await_userManager.createAsync()
+        - After the result.succeeded if statement, add a line of code to add users to role "Customer"
+
+### Demo 3 Protecting your keys by adding them to a secret store
+- Open the Package Manager Console
+- If you haven't configured user-secrets in your project yet:
+    - Navigate to your project folder
+        - Dir
+        - cd <folder>
+    - Run the following commands:
+        - dotnet user-secrets init
+- If you already configured user-secrets run the following two commands:
+    - dotnet user-secrets set "Authentication:Google:ClientId" "KEYFROMGOOGLE"
+    - dotnet user-secrets set "Authentication:Google:ClientSecret" "KEYFROMGOOGLE"
+- In appsettings.json
+    - Replace client id and client secret values with \<secret>
+- Note: you can always see what user secrets you have added in JSON format
+    - Right click on the solution name
+    - Choose 'Manage User Secrets'
+    - This will open a configuration file in JSON format containing your local project secrets
+- Run the application
+    - Try using Google to login once more
+These will only work locally for now
