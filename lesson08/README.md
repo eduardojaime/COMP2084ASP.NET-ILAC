@@ -1,6 +1,140 @@
 # Instructions
 
-### Demo 1 TITLE
+### Demo 1 Implementing ASP.NET Authentication
+- Open current project.
+- When project is created and authentication is set to Individual User Accounts, these objects are created:
+    - Look at schema in Management Studio
+    - Look at migration script under /Data/Migrations
+    - Nuget packages:
+        - Microsoft.AspNetCore.Identity > UI and EntityFramework
+        - No need to create models for Users or Roles, as the packages will help us manage them
+    - This functionality has been added in Program.cs when the project was created under
+        - ConfigureServices()
+        - Configure()
+- To make ours work, remove confirmation email step for new users.
+    - Modify Program.cs to disable sending confirmation emails for new users that
+    - builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false) set to false
+- Run project and navigate to Register:
+    - Try registering a new account: 
+    - Notice validations on form
+        - Default password validation, can be updated later on
+    - Query AspNetUsers table in SQL Server
+    - Log out and back in to show proper validation
+    - Register second account with same email address
+- How do we control access to parts of the website when the customer is logged in or not?
+    - These are public but need to be changed:
+        - /Categories
+        - /Products
+    - We can apply authentication at the controller, method and view level
+        - At View level by checking the value of User.Identity.IsAuthenticated
+            - Wrap two links inside this condition
+            - Test a few things:
+                - With this User object, we are using the out-of-the-box functionality, so there's no need for us handling session variables or cookies
+                - At this point we can't see them in the nav bar but I can still navigate to them
+        - At Controller and Method level by adding the [Authorize] attribute at the top of the Categories controller
+            - Add reference to Microsoft.AspNetCore.Authorization if needed
+            - Refresh page as an anonymous user, what should happen?
+                - Users get redirected to the login page
+                - Notice url information
+                - When credentials are entered, users will be redirected to where they wanted to go
+            - Adding this decorator at the class level makes sense for controllers that contain only private (usually CRUD) operations
+            - But is there any that needs to be made public?
+                - Details method > Add AllowAnonymous decorator
+                - Not very useful, due to the links that still show up but this is just for demonstration purposes
+        - Add [Authorize] at the top of the Products controller
+    - This is basic authorization, not very secure for now. What is the problem here?
+        - Basic Authorization checks for a single rule, that a user is authenticated.
+        - Anybody can register for an account and make changes to the brands/categories/products.
+        - What do we need to implement?
+            - Need to differentiate two different types of users:
+                - Admins
+                - Customers
+            - We do this by implementing roles (authorization component) on top of our authentication
+        - We'll do this in Lesson 9
 
-- STEP 1
-    - STEP 2
+### Demo 2 Creating Browse Category page
+- Run the application and log in as a Customer
+- Navigate to Store and click on a Category
+- Notice the URL /Store/Browse/1
+    - Page is blank, what needs to be added to our program?
+- In /Controllers/StoreController.cs
+    - Add a new IActionResult called Browse that will receive an int ID value as a parameter
+    - Use a LINQ query to get a list of products filtered by CategoryId and ordered by Name
+    - Pass list back to the View
+    - Use a LINQ query to get the Category name
+    - Add category name to the ViewBag object
+- In the Views folder
+    - Right click on the Views folder and add a new View named Browse (same as the new method in the StoreController)
+    - Make the following modifications to the new view:
+        - Specify the Model that will be used. List of Products. At the top of the file
+        - Check that the ViewBag object is not null and add a subtitle to the page
+        - Reuse the Bootstrap Cards HTML code from the index view
+            - Link products to /Products/Details/\<id> using the anchor tag helpers
+            - Show photo of each product as a thumbnail
+            - Show price with currency format
+            - What else would be needed a this point? Browse through a few online stores to see what their product detail pages look like.
+- Run the solutions to try it out
+    - If you see an AccessDenied error when navigating to /Store/Browse/\<id>
+        - Go to /Controllers/ProductController.cs
+        - Add [AllowAnonymous] above the Details action method
+
+### Demo 3 Implementing Add to Cart functionality
+- Back to /Views/Store/Browse.cshtml
+    - Implement an Add to Cart button, there are different ways to do this but we'll implement a Form element:
+        - Method = Post
+        - Action =  /Store/AddToCart
+        - Add a hidden input field to store ID value of the product
+        - Add an input field to store a quantity value
+        - Add a button to perform the POST operation
+- Open /Views/Product/Details.cshtml
+    - Modify \<h1> to read Product Details
+    - Get rid of \<h4> element
+    - Modify label displaying photo filename:
+        - Remove Html.DisplayFor(model => model.Photo)
+        - Check if photo is null or empty
+            - If false, display an \<img> element
+    - At the bottom section
+        - Remove Edit and Back to List links
+        - Copy AddToCart form from /Views/Store/Browse.cshtml
+        - Modify ID field accordingly
+        - Add back button that uses JavaScript to go back in history
+- Open /Models/Cart.cs
+    - Review Cart model
+    - CustomerId > How can we let people shop anonymously and still tie items to the same user without them login?
+        - Session Variable + New Guid (same way that image names are made unique)
+- Open /Controllers/StoreController.cs
+    - Create a GetCustomerId() method that returns a string
+        - Check the session for an existing CustomerId
+        - If there is no CustomerId in the session check if user is logged in
+            - If user is authenticated, use EmailAddress as ID
+            - Otherwise (Anonymous) generate a new Guid to use as Id
+        - Save ID to session
+        - Return value stored in the session variable
+    - Add new Action method called AddToCart() with these parameter (names have to match input names)
+        - Int ProductId
+        - Int Quantity
+        - Get customerId from calling method above
+        - Query the DB for the product price
+        - Create new Cart object
+            - Always save dates as UTC time
+        - Redirect to new method called Cart which will display a view that shows the contents of the cart
+- Try it out
+    - Error will be thrown: 'System.InvalidOperationException: Session has not been configured for this application or request.'
+    - Session needs to be enabled in Program.cs
+- Open Program.cs
+    - In the services section, call builder.Services.AddSession()
+    - In the app configuration section call app.UseSession()
+- Try it out again
+    - Verify values in the DB
+    - Verify in different browsers
+- Open /Controllers/StoreController.cs
+    - Add a new Action method named Cart
+    - Use a LINQ query to get the current Cart by CustomerId
+- Rick click on the Views folder
+    - Choose Razor View
+    - Make view name Cart
+    - Select List as template
+    - Select Cart as the model class
+    - Click Add
+- Run the application and test navigating to /Store/Cart
+- We'll complete this feature in Lesson 10
