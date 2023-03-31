@@ -9,16 +9,20 @@ using DotNetGrill.Data;
 using DotNetGrill.Models;
 using Microsoft.AspNetCore.Authorization;
 using DotNetGrill.Extensions;
+using Stripe;
+using Stripe.Checkout;
 
 namespace DotNetGrill.Controllers
 {
     public class StoreController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public StoreController(ApplicationDbContext context)
+        public StoreController(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         // GET: Store
@@ -137,6 +141,99 @@ namespace DotNetGrill.Controllers
 
             // redirect to Payment page
             return RedirectToAction("Payment");
+        }
+
+        //GET handler for /Store/Payment
+        public IActionResult Payment()
+        {
+            var order = HttpContext.Session.GetObject<DotNetGrill.Models.Order>("Order");
+
+            // Pass total in cents
+            ViewBag.Total = order.Total * 100;
+
+            // pass publishable key to view to use in javascript code
+            ViewBag.PublishableKey = _configuration["Stripe:PublishableKey"];
+
+            return View();
+        }
+        // POST handler for /Store/Payment
+        [HttpPost]
+        public IActionResult Payment(string stripeToken)
+        {
+            // get order from session variable
+            var order = HttpContext.Session.GetObject<DotNetGrill.Models.Order>("Order");
+            // retrieve stripe config > Secret Key
+            StripeConfiguration.ApiKey = _configuration["Stripe:SecretKey"];
+            // create a stripe session object options
+            var options = new SessionCreateOptions
+            {
+                LineItems = new List<SessionLineItemOptions>
+                {
+                  new SessionLineItemOptions
+                  {
+                    PriceData = new SessionLineItemPriceDataOptions
+                    {
+                        UnitAmount = (long?)(order.Total * 100),
+                        Currency = "cad",
+                        ProductData = new SessionLineItemPriceDataProductDataOptions
+                        {
+                            Name = "DotNetGrill Purchase"
+                        },
+                    },
+                    Quantity = 1
+                  },
+                },
+                PaymentMethodTypes = new List<string>
+                {
+                  "card"
+                },
+                Mode = "payment",
+                SuccessUrl = "https://" + Request.Host + "/Store/SaveOrder",
+                CancelUrl = "https://" + Request.Host + "/Store/Cart",
+            };
+
+            // create a stripe service object which will help us initialize the session
+            var service = new SessionService();
+            // initialize the session object
+            Session session = service.Create(options);
+
+            // pass and id back to the view (handle by javascript)
+            return Json(new { id = session.Id });
+        }
+
+        // GET handler for /Store/SaveOrder
+        public IActionResult SaveOrder()
+        {
+            // get order from session
+            var order = HttpContext.Session.GetObject<Models.Order>("Order");
+            // save it in the db
+            _context.Orders.Add(order);
+            _context.SaveChanges();
+            // get customer id
+            var customerId = GetCustomerId();
+            // get all cart items
+            var cartItems = _context.Carts.Where(i => i.CustomerId == customerId);
+            // save them in order details
+            foreach (var item in cartItems)
+            {
+                var orderDetail = new Models.OrderItem
+                {
+                    OrderId = order.OrderId,
+                    ProductId = item.ProductId,
+                    Quantity = item.Quantity,
+                    Price = item.Price
+                };
+                _context.OrderItems.Add(orderDetail);
+            }
+            _context.SaveChanges();
+            // clear the cart
+            foreach (var item in cartItems)
+            {
+                _context.Carts.Remove(item);
+            }
+            _context.SaveChanges();
+            // redirect to /Orders/Details
+            return RedirectToAction("Details", "Orders", new { @id = order.OrderId });
         }
 
         /// <summary>
