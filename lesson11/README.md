@@ -1,6 +1,99 @@
 # Instructions
 
-### Demo 1 TITLE
+### Demo 1 Implementing a Payment Gateway (Stripe)
+- Open a browser and navigate to https://dashboard.stripe.com/register to sign up for a new account
+- Back to Visual Studio
+    - Open Nuget Package Manager
+    - Install Stripe.NET package
+- Open appsettings.json
+    - Add new section called Stripe
+    - Add PublishableKey and SecretKey properties
+    - Set the value of each property to '\<secret>'
+- Navigate to Stripe Dashboard
+    - In the left-hand side menu, select Developers > API Keys
+    - Get keys for PublishableKey and SecretKey from here
+- Back to Visual Studio
+    - Open Package Manager Console
+    - Add both values to user secrets
+- Open /Controllers/StoreController.cs
+    - Import these namespace
+        - Stripe
+        - Stripe.Checkout
+    - Add a private IConfiguration field
+    - Modify the constructor and add an IConfiguration parameter
+        - This is ASP.NET Core dependency injection
+        - Associate the configuration in the parameter with the private field
+    - Create a GET action method for Payment()
+        - Get order object from session
+        - Calculate total in cents
+        - Set PublishableKey viewbag property
+- Rick click on /Views/Store
+    - Create an empty view called Payment. 
+        - Most Html content will come from Stripe
+        - Add page title as Payment
+        - Add h4 element to contain order total
+        - Bring code from https://pastebin.com/Rtt5c52n
+            - Reference Stripe's API at the top of the page
+            - Create a checkout button to trigger the payment processing step
+            - Copy over JS code from link, this will handle payments
+- Run the application to verify
+    - Total amount is shown correctly
+    - Submit button should not work for now
+- Open /Controllers/StoreController.cs
+    - Create a new action method called Payment to handle a POST request
+        - Use the HttPost decorator
+        - Get order from the session variable
+        - Get SecretKey and add it to the StripeConfiguration object
+        - Navigate to https://stripe.com/docs/checkout/integration-builder to implement the payment processing step:
+            - Create SessionCreateOptions object
+            - Specify payment methods
+            - Specify line items
+            - Choose mode: Payment, Subscription, or Setup. Select Payment for one-time purchases
+            - Specify success and error URL
+            - Create a checkout session
+            - Return session id via JSON response
+    - Create a new action method called SaveOrder
+        - Review the Order and OrderDetail model classes
+        - Get order object from session variable
+        - Create a new order in the db
+        - Retrieve all items in the shopping cart
+        - Copy each item from the cart to a new order detail record
+        - Clear the cart for this user
+        - Redirect to Order Details (Note: this will show a blank page for now)
+- Run the application to verify
+    - Add items to the shopping cart and proceed to payment
+    - Test with VISA card 4242 4242 4242 4242
+    - Enter any CVV
+    - Enter any expiry date in the future
 
-- STEP 1
-    - STEP 2
+### Demo 2 Adding Orders History and Details pages
+- Right click on the Controllers folder > Add > New Scaffolded Item
+    - Select MVC Controller with views using EF
+    - Model class will be Order
+    - Controller name will be OrdersController
+    - Click Add
+- Open /Controllers/OrdersController.cs
+    - Remove unused action methods: Create, Edit, and Delete
+    - Modify Index() to show different forms for Admins and Customers
+        - Admins can see all orders
+        - Customers can only see their orders
+        - Sort both by date descending
+- Go to /Views/Order
+    - Remove unused views: Create, Edit, and Delete
+- Open /Views/Order/Index.cshtml
+    - Modify \<h1> to read Order History
+    - Add table-striped and table-hover CSS classes to main table
+    - Move total column at the end
+    - Format total as currency
+    - Remove links to delete and edit
+- Open /Views/Shared/_Layout.cshtml
+    - Add a navigation link to Orders
+- Back to /Controllers/OrdersControllers.cs
+    - Modify Details()
+        - Include Order Details and Products in LINQ query
+        - Improvement: if user is not admin and does not own the order, show unauthorized
+- Open /Views/Orders/Details.cshtml
+    - Remove customerId, and move totals to the bottom
+    - Remove link to edit
+    - Use a for loop to render all items related to this order in a table
+- Run the application to verify
