@@ -1,6 +1,7 @@
 using DotNetGrill.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,15 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+// Add third-party authentication
+builder.Services.AddAuthentication()
+                .AddGoogle(options =>
+                {
+                    options.ClientId = builder.Configuration.GetSection("Authentication:Google")["ClientId"];
+                    options.ClientSecret = builder.Configuration.GetSection("Authentication:Google")["ClientSecret"];
+                });
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
 
