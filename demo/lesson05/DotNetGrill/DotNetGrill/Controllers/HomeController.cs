@@ -15,11 +15,21 @@ namespace DotNetGrill.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            return View(); // returns a view inside /Views/Home with the same name as the method
         }
 
         public IActionResult Privacy()
         {
+            return View(); // returns a view inside /Views/Home with the same name as the method
+        }
+
+        // 1) add action methods in order to handle another page
+        // 2) add a corresponding view file in the folder for this controller
+        // /ContactUs
+        //action results can be JSON, XML, PLAIN TEXT, BINARY FILES OR... HTML (VIEWS)
+        public IActionResult ContactUs() 
+        {
+            // returns a rendered view (HTML)
             return View();
         }
 
