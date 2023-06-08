@@ -26,11 +26,18 @@ namespace DotNetGrill.Controllers
         // 1) add action methods in order to handle another page
         // 2) add a corresponding view file in the folder for this controller
         // /ContactUs
-        //action results can be JSON, XML, PLAIN TEXT, BINARY FILES OR... HTML (VIEWS)
-        public IActionResult ContactUs() 
+        // action results can be JSON, XML, PLAIN TEXT, BINARY FILES OR... HTML (VIEWS)
+        public IActionResult ContactUs()
         {
             // returns a rendered view (HTML)
-            return View();
+            return View(); // returns /Views/Home/ContactUs.cshtml
+        }
+
+        // Add another action method and view for the About page
+        public IActionResult About()
+        {
+            //ViewData["Content"] = "Hello there!";
+            return View(); // returns /Views/Home/About.cshtml
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
