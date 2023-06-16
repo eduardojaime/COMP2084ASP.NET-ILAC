@@ -35,11 +35,20 @@
                             @*Recommended Approach > use tag helpers*@
                             <a class="nav-link text-dark" asp-controller="Home" asp-action="About">About</a>
                         </li>
-                        <li>
+                        <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Home" asp-action="ContactUs">Contact Us</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Categories" asp-action="Index">Categories</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Products" asp-action="Index">Products</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Store" asp-action="Index">Menu</a>
                         </li>
                     </ul>
                     <partial name="_LoginPartial" />
