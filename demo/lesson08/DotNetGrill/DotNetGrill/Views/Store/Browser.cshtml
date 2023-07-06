@@ -1,0 +1,43 @@
+﻿@model IEnumerable<DotNetGrill.Models.Product>
+
+@{
+    if (ViewBag.categoryName == null)
+    {
+        ViewData["Title"] = "Category";
+    }
+    else
+    {
+        ViewData["Title"] = ViewBag.categoryName; // Lunch or Breakfast or Dinner, etc...
+    }
+}
+
+@if (ViewBag.categoryName == null)
+{
+    <h1>Category</h1>
+}
+else
+{
+    <h1>@ViewBag.categoryName</h1>
+}
+
+@*Copy over card code*@
+<section class="row card-group">
+    @*render 1 card per category*@
+    @foreach (var p in Model)  // Model refers to IEnumerable<DotNetGrill.Models.Product>
+    {
+        <div class="col-lg-4 mb-3">
+            <div class="card mb-4">
+                <div class="card-body text-center h-100">
+                    <a asp-controller="Products" asp-action="Details" asp-route-id="@p.ProductId">
+                        @p.Name
+                    </a>
+                    <h6>@p.Price.ToString("C")</h6>
+                    <img src="~/imgs/products/@p.Photo"
+                         alt="Photo of @p.Name"
+                         class="img-thumbnail"
+                         style="max-width: 250px" />
+                </div>
+            </div>
+        </div>
+    }
+</section>
