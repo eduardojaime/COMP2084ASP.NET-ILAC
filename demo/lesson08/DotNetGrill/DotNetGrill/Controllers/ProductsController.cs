@@ -7,9 +7,15 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using DotNetGrill.Data;
 using DotNetGrill.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DotNetGrill.Controllers
 {
+    // You can specify protection at the controller and method level
+    // Best Practice: Apply protection at the controller level (more strict)
+    // and then allow methods individually if needed
+    // Principle of Least Privilege
+    [Authorize] // protects ALL action methods, GET and POST
     public class ProductsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -20,6 +26,7 @@ namespace DotNetGrill.Controllers
         }
 
         // GET: Products
+        // [Authorize] // not very safe, it would need to be applied to ALL methods individually
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.Products.Include(p => p.Category);
@@ -27,6 +34,7 @@ namespace DotNetGrill.Controllers
         }
 
         // GET: Products/Details/5
+        [AllowAnonymous] // opens this route to public access
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null || _context.Products == null)
