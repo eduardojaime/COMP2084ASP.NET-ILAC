@@ -29,7 +29,7 @@ namespace DotNetGrill.Controllers
 
         // GET: Store/Browse/1
         // Gets a categoryId value and shows a filtered list of products
-        public async Task<IActionResult> Browser(int id) { 
+        public async Task<IActionResult> Browse(int id) { 
             // retrieve a list of products by category id
             // use dbcontext
             // linq query
