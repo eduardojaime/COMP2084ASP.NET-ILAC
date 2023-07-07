@@ -36,6 +36,17 @@ else
                          alt="Photo of @p.Name"
                          class="img-thumbnail"
                          style="max-width: 250px" />
+                    @*form elements are used to trigger actions in the controller and send data*@
+                    <form method="post" action="/Store/AddToCart">
+                        <input type="hidden" id="ProductId" name="ProductId" value="@p.ProductId"/>
+                        <div class="form-group">
+                            <label class="form-control" for="Quantity">Qty: </label>
+                            <input name="Quantity" id="Quantity" required
+                                type="number" min="1" max="999" />
+                        </div>
+                        @*actions are triggered with buttons*@
+                        <button class="btn btn-primary">Add to Cart</button>
+                    </form>
                 </div>
             </div>
         </div>
