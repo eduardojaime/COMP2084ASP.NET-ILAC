@@ -1,6 +1,7 @@
 using DotNetGrill.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,16 @@ builder.Services
     .AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddRoles<IdentityRole>() // needed for enabling [Authorize("Role")] decorator
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+// chaining methods for configuring third-party authentication
+builder.Services
+    .AddAuthentication()
+    .AddGoogle(options =>
+    {
+        options.ClientId = builder.Configuration.GetSection("Authentication:Google")["ClientId"];
+        options.ClientSecret = builder.Configuration.GetSection("Authentication:Google")["ClientSecret"];
+    });
+
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSession(); // enables session service
