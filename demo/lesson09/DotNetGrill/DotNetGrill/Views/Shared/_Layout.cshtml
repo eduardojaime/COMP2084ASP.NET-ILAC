@@ -41,7 +41,7 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
-                        @if (User.Identity.IsAuthenticated == true)
+                        @if (User.Identity.IsAuthenticated == true && User.IsInRole("Administrator"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Categories" asp-action="Index">Categories</a>

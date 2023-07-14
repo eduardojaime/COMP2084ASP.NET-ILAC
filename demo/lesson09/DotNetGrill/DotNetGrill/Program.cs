@@ -13,7 +13,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 // chaining methods for configuring the authentication/authorization mechanism
 builder.Services
     .AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
-    .AddRoles<IdentityRole>() // needed for enabling [Authorize("Role")] rules
+    .AddRoles<IdentityRole>() // needed for enabling [Authorize("Role")] decorator
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 

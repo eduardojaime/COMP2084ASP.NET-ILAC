@@ -15,7 +15,8 @@ namespace DotNetGrill.Controllers
     // Best Practice: Apply protection at the controller level (more strict)
     // and then allow methods individually if needed
     // Principle of Least Privilege
-    [Authorize] // protects ALL action methods, GET and POST
+    // [Authorize] // protects ALL action methods, GET and POST
+    [Authorize(Roles = "Administrator")]
     public class ProductsController : Controller
     {
         private readonly ApplicationDbContext _context;
