@@ -78,11 +78,12 @@ namespace DotNetGrill.Controllers
         {
             string customerId = GetCustomerId();
             // return a list of elements in the carts table by customerId
-            var carts = _context.Carts
-                        .Include(c => c.Product) // include every product connected to a cart, similar to JOIN in SQL
-                        .Where(c => c.CustomerId == customerId)
-                        .OrderByDescending(c => c.DateCreated)
-                        .ToList();
+            var carts = _context.Carts // SELECT * FROM CARTS c
+                // How to include info from other tables ??
+                .Include(c => c.Product) // JOIN Products p ON p.ProductId = c.ProductId
+                .Where(c => c.CustomerId == customerId) // WHERE c.CustomerId = @
+                .OrderByDescending(c => c.DateCreated) // ORDER BY c.DateCreate DESC
+                .ToList();
 
             // pass single value to view with the viewbag object
             // use LINQ methods to calculate sums and averages and other operations easily

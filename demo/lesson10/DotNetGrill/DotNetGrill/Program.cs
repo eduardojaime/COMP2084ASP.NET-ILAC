@@ -8,7 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+options.UseSqlServer(connectionString)); // DI: Register a db connection to SQL Server
+// after this line of code is executed, an instance of ApplicationDBContext will be available my classes
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 // chaining methods for configuring the authentication/authorization mechanism

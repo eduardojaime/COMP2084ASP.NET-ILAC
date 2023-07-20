@@ -76,13 +76,30 @@ namespace DotNetGrill.Controllers
         public async Task<IActionResult> Cart() {
             string customerId = GetCustomerId();
             // return a list of all elements in the db associated to that customer id
-            var carts = _context.Carts
-                .Where(c => c.CustomerId == customerId)
-                .OrderByDescending(c => c.DateCreate)
+            var carts = _context.Carts // SELECT * FROM CARTS c
+                // How to include info from other tables ??
+                .Include(c => c.Product) // JOIN Products p ON p.ProductId = c.ProductId
+                .Where(c => c.CustomerId == customerId) // WHERE c.CustomerId = @
+                .OrderByDescending(c => c.DateCreate) // ORDER BY c.DateCreate DESC
                 .ToList();
+
+            // Use viewbag object to pass data to the view
+            // SELECT SUM(c.Price) FROM Carts c
+            var total = carts.Sum(c => c.Price).ToString("C");
+            ViewBag.TotalAmount = total; // viewbag is a dynamic object
+
             return View(carts);
         }
 
+        // GET: /Store/RemoveFromCart/{id}
+        public async Task<IActionResult> RemoveFromCart(int id) { 
+            var cart = _context.Carts.Find(id);
+            _context.Carts.Remove(cart);
+            _context.SaveChanges();
+            return RedirectToAction("Cart");
+        }
+
+        // TODO: Add Checkout method
 
         // This method uses the session object to store a value that idientifies users
         // Users can be anonymous or authenticated
