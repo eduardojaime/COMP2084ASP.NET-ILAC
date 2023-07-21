@@ -87,7 +87,7 @@ namespace DotNetGrill.Controllers
 
             // pass single value to view with the viewbag object
             // use LINQ methods to calculate sums and averages and other operations easily
-            var total = carts.Sum(c => c.Price).ToString("C");
+            var total = carts.Sum(c => (c.Price * c.Quantity)).ToString("C");
             ViewBag.TotalAmount = total; // Viewbag object is dynamic, after this line of code "TotalAmount" will be available to the app
 
             return View(carts);
@@ -130,7 +130,7 @@ namespace DotNetGrill.Controllers
                         .Where(c => c.CustomerId == GetCustomerId())
                         .OrderByDescending(c => c.DateCreated)
                         .ToList();
-            var total = carts.Sum(c => c.Price);
+            var total = carts.Sum(c => (c.Price * c.Quantity));
             order.Total = total;
 
             // store in session object to hold this order temporarily until payment is made

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using DotNetGrill.Data;
 using DotNetGrill.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DotNetGrill.Controllers
 {
@@ -73,11 +74,12 @@ namespace DotNetGrill.Controllers
         }
 
         // GET: Store/Cart
-        public async Task<IActionResult> Cart() {
+        public async Task<IActionResult> Cart()
+        {
             string customerId = GetCustomerId();
             // return a list of all elements in the db associated to that customer id
             var carts = _context.Carts // SELECT * FROM CARTS c
-                // How to include info from other tables ??
+                                       // How to include info from other tables ??
                 .Include(c => c.Product) // JOIN Products p ON p.ProductId = c.ProductId
                 .Where(c => c.CustomerId == customerId) // WHERE c.CustomerId = @
                 .OrderByDescending(c => c.DateCreate) // ORDER BY c.DateCreate DESC
@@ -85,21 +87,55 @@ namespace DotNetGrill.Controllers
 
             // Use viewbag object to pass data to the view
             // SELECT SUM(c.Price) FROM Carts c
-            var total = carts.Sum(c => c.Price).ToString("C");
+            var total = carts.Sum(c => (c.Price * c.Quantity)).ToString("C");
             ViewBag.TotalAmount = total; // viewbag is a dynamic object
 
             return View(carts);
         }
 
         // GET: /Store/RemoveFromCart/{id}
-        public async Task<IActionResult> RemoveFromCart(int id) { 
+        public async Task<IActionResult> RemoveFromCart(int id)
+        {
             var cart = _context.Carts.Find(id);
             _context.Carts.Remove(cart);
             _context.SaveChanges();
             return RedirectToAction("Cart");
         }
 
-        // TODO: Add Checkout method
+        // GET: /Store/Checkout
+        // Note: Only authenticated customers can complete a purchase
+        [Authorize]
+        public async Task<IActionResult> Checkout()
+        {
+            return View();
+        }
+
+        // POST: /Store/Checkout
+        [Authorize]
+        [ValidateAntiForgeryToken] // for security to prevent hijacking
+        [HttpPost]
+        // values in input fields are sent via form
+        // use Model Binder to build this order object with info from form
+        public async Task<IActionResult> Checkout(
+            [Bind("FirstName,LastName,Address,City,PostalCode")] Models.Order order
+            )
+        {
+            // fill in missing info in object
+            order.DateCreated = DateTime.UtcNow; // best practice
+            order.CustomerId = GetCustomerId();
+            var carts = _context.Carts
+                        .Include(c => c.Product) // include every product connected to a cart, similar to JOIN in SQL
+                        .Where(c => c.CustomerId == GetCustomerId())
+                        .ToList();
+            var total = carts.Sum(c => (c.Price * c.Quantity));
+            order.Total = total;
+            // store object in session, it will be saved to the DB once customer completes payment
+
+            // redirect to payment page
+            return RedirectToAction("Payment");
+        }
+
+        // TODO: Add Payment
 
         // This method uses the session object to store a value that idientifies users
         // Users can be anonymous or authenticated
