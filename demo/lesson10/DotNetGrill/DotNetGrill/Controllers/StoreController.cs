@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using DotNetGrill.Data;
 using DotNetGrill.Models;
 using Microsoft.AspNetCore.Authorization;
+using DotNetGrill.Extensions;
 
 namespace DotNetGrill.Controllers
 {
@@ -130,7 +131,8 @@ namespace DotNetGrill.Controllers
             var total = carts.Sum(c => (c.Price * c.Quantity));
             order.Total = total;
             // store object in session, it will be saved to the DB once customer completes payment
-
+            // write a custom extension method for storing objects
+            HttpContext.Session.SetObject("Order", order);
             // redirect to payment page
             return RedirectToAction("Payment");
         }
