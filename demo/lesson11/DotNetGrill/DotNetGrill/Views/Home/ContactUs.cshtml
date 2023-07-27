@@ -1,0 +1,29 @@
+﻿@{
+    // VARIABLES AND OTHER VIEW CONFIGURATIONS GO HERE
+    // LAYOUT
+    // PAGE TITLE
+    ViewData["Title"] = "Contact Us";
+}
+@*html code goes below*@
+<h1>Contact Us</h1>
+<p>Use the form below to send us a message!</p>
+<form method="post">
+    @*FORM FIELDS*@
+    <fieldset>
+        <label class="form-label">Name: </label>
+        <input class="form-control" id="name" />
+    </fieldset>
+    <fieldset>
+        <label class="form-label">Email: </label>
+        <input class="form-control" id="email" type="email" />
+    </fieldset>
+    <fieldset>
+        <label class="form-label">Message: </label>
+        <textarea class="form-control" id="message" type="text">
+
+        </textarea>
+    </fieldset>
+    <hr />
+    @*BUTTON*@
+    <button class="btn btn-primary">Submit</button>
+</form>
