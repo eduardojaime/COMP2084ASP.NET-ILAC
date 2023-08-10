@@ -31,7 +31,12 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddSession(); // enables session service
 
+builder.Services.AddSwaggerGen(); // enables swagger generator service
+
 var app = builder.Build();
+
+app.UseSwagger();
+app.UseSwaggerUI(); // enables the /swagger section in the website
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
