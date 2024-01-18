@@ -4,6 +4,8 @@ using System.Diagnostics;
 
 namespace DotNetGrillWebUI.Controllers
 {
+    // Controllers represent sections in your app
+    // e.g. https://localhost:1234/HOME
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -12,15 +14,16 @@ namespace DotNetGrillWebUI.Controllers
         {
             _logger = logger;
         }
-
+        // Each action result method handles an HTTP request to a specific subsection
+        // GET /Home/Index or / or /Home because it's the default method
         public IActionResult Index()
         {
-            return View();
+            return View(); // renders /Views/Home/Index.cshtml
         }
-
+        // GET /Home/Privacy
         public IActionResult Privacy()
         {
-            return View();
+            return View(); // renders /Views/Home/Privacy.cshtml
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
