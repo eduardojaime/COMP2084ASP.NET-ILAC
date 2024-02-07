@@ -1,5 +1,7 @@
 ﻿namespace DotNetGrill.Models
 {
+    // This is a dependent entity
+    // It cannot exist without an instance of Order
     public class OrderItem
     {
         public int OrderItemId { get; set; }

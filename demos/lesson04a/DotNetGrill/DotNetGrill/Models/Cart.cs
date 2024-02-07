@@ -1,5 +1,8 @@
 ﻿namespace DotNetGrill.Models
 {
+    // A cart represents a product that's added to the user's Shopping Cart
+    // Temporary list of user selections
+    // Carts are cleared once user either checks out or clears the cart
     public class Cart
     {
         public int CartId { get; set; }
