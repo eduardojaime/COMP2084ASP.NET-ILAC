@@ -1,7 +1,11 @@
-﻿namespace DotNetGrill.Models
+﻿using DotNetGrillWebUI.Models;
+
+namespace DotNetGrill.Models
 {
     public class Cart
     {
+        // Think of cart as a temporary list of selected products the user intends to pay for
+        // Once user pays and order is created, these records are cleared
         public int CartId { get; set; }
         // it will be associated to the Customer by GUID or email address
         public string CustomerId { get; set; }

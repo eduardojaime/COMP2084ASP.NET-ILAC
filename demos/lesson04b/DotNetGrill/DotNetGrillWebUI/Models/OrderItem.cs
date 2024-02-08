@@ -1,4 +1,6 @@
-﻿namespace DotNetGrill.Models
+﻿using DotNetGrillWebUI.Models;
+
+namespace DotNetGrill.Models
 {
     public class OrderItem
     {

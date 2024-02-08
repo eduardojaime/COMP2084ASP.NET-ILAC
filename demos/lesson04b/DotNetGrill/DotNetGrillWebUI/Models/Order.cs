@@ -19,6 +19,7 @@ namespace DotNetGrill.Models
 
         [Display(Name = "Postal Code")]
         public string PostalCode { get; set; }
+        // 1 to M relationship to OrderItems
         public List<OrderItem>? OrderItems { get; set; }
     }
 }
