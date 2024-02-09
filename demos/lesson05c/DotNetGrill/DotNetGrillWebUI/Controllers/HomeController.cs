@@ -26,6 +26,11 @@ namespace DotNetGrillWebUI.Controllers
         {
             return View(); // renders /Views/Home/Privacy.cshtml
         }
+        // GET /Home/AboutUs
+        public IActionResult AboutUs() {
+            // no parameters assumes view and method have the same name
+            return View(); // renders /Views/Home/AboutUs.cshtml
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
