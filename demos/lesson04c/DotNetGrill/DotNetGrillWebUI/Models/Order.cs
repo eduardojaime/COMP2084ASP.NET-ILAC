@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace DotNetGrill.Models
+namespace DotNetGrillWebUI.Models
 {
     public class Order
     {
@@ -8,6 +8,7 @@ namespace DotNetGrill.Models
         public string CustomerId { get; set; }
         public decimal Total { get; set; }
         public DateTime DateCreated {get;set; }
+
         [Display(Name = "First Name")]
         public string FirstName { get; set; }
 
@@ -19,6 +20,8 @@ namespace DotNetGrill.Models
 
         [Display(Name = "Postal Code")]
         public string PostalCode { get; set; }
+        // 1 to M relationship from Order to OrderItems
+        // 1 part contains a list 
         public List<OrderItem>? OrderItems { get; set; }
     }
 }
