@@ -35,6 +35,7 @@
             <div class="form-group">
                 <label asp-for="Photo" class="control-label"></label>
                 <input asp-for="Photo" class="form-control" type="file" />
+                <input type="hidden" name="currentImage" id="currentImage" value="@Model.Image" />
                 <span asp-validation-for="Photo" class="text-danger"></span>
             </div>
             <div class="form-group">
