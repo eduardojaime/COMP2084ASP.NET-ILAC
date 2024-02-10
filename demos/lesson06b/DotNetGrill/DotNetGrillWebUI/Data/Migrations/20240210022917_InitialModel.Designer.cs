@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DotNetGrillWebUI.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240208011107_InitialModel")]
+    [Migration("20240210022917_InitialModel")]
     partial class InitialModel
     {
         /// <inheritdoc />
@@ -25,7 +25,7 @@ namespace DotNetGrillWebUI.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("DotNetGrill.Models.Cart", b =>
+            modelBuilder.Entity("DotNetGrillWebUI.Models.Cart", b =>
                 {
                     b.Property<int>("CartId")
                         .ValueGeneratedOnAdd()
@@ -56,7 +56,24 @@ namespace DotNetGrillWebUI.Data.Migrations
                     b.ToTable("Carts");
                 });
 
-            modelBuilder.Entity("DotNetGrill.Models.Order", b =>
+            modelBuilder.Entity("DotNetGrillWebUI.Models.Category", b =>
+                {
+                    b.Property<int>("CategoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryId"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("CategoryId");
+
+                    b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("DotNetGrillWebUI.Models.Order", b =>
                 {
                     b.Property<int>("OrderId")
                         .ValueGeneratedOnAdd()
@@ -103,7 +120,7 @@ namespace DotNetGrillWebUI.Data.Migrations
                     b.ToTable("Orders");
                 });
 
-            modelBuilder.Entity("DotNetGrill.Models.OrderItem", b =>
+            modelBuilder.Entity("DotNetGrillWebUI.Models.OrderItem", b =>
                 {
                     b.Property<int>("OrderItemId")
                         .ValueGeneratedOnAdd()
@@ -130,23 +147,6 @@ namespace DotNetGrillWebUI.Data.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("OrderItems");
-                });
-
-            modelBuilder.Entity("DotNetGrillWebUI.Models.Category", b =>
-                {
-                    b.Property<int>("CategoryId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryId"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("CategoryId");
-
-                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("DotNetGrillWebUI.Models.Product", b =>
@@ -387,7 +387,7 @@ namespace DotNetGrillWebUI.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("DotNetGrill.Models.Cart", b =>
+            modelBuilder.Entity("DotNetGrillWebUI.Models.Cart", b =>
                 {
                     b.HasOne("DotNetGrillWebUI.Models.Product", "Product")
                         .WithMany()
@@ -398,9 +398,9 @@ namespace DotNetGrillWebUI.Data.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("DotNetGrill.Models.OrderItem", b =>
+            modelBuilder.Entity("DotNetGrillWebUI.Models.OrderItem", b =>
                 {
-                    b.HasOne("DotNetGrill.Models.Order", "Order")
+                    b.HasOne("DotNetGrillWebUI.Models.Order", "Order")
                         .WithMany("OrderItems")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -479,14 +479,14 @@ namespace DotNetGrillWebUI.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("DotNetGrill.Models.Order", b =>
-                {
-                    b.Navigation("OrderItems");
-                });
-
             modelBuilder.Entity("DotNetGrillWebUI.Models.Category", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("DotNetGrillWebUI.Models.Order", b =>
+                {
+                    b.Navigation("OrderItems");
                 });
 #pragma warning restore 612, 618
         }

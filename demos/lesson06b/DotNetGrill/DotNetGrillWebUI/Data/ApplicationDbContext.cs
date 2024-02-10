@@ -1,6 +1,7 @@
 ﻿using DotNetGrillWebUI.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Security.AccessControl;
 
 namespace DotNetGrillWebUI.Data
 {
@@ -11,7 +12,8 @@ namespace DotNetGrillWebUI.Data
             : base(options)
         {
         }
-        // add dbset declarations to represent tables in your database
+        // dbsets will be converted into tables
+        // dbset names are plural
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Order> Orders { get; set; }
