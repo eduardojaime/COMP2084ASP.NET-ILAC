@@ -110,7 +110,7 @@
     - Delete all action methods except index, also leave the constructor in place
 - Go to /Views/Store in the Solution explorer
     - Delete all views except index
-- Open /Controllers/Shop/Index.cshtml
+- Open /Views/Store/Index.cshtml
     - Remove the default contents in the html body
     - Modify the page title to read 'Explore our Menu!'
     - Add a h1 element that reads 'Explore our Menu!'
