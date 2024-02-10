@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DotNetGrillWebUI.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240209012200_InitialModel")]
+    [Migration("20240210022917_InitialModel")]
     partial class InitialModel
     {
         /// <inheritdoc />
