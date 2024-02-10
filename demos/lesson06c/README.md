@@ -1,0 +1,131 @@
+# Instructions
+
+### Demo 1 Scaffolding controllers and views for CRUD operations (Categories)
+- Visual Studio comes with an option to automatically generate a Controller and a set of Views to handle CRUD operations based on a Model class
+- Right click on Controllers
+    - Select Add and then New Scaffolded Item…
+    - Choose MCV Controller with views, using Entity Framework
+    - Select the Category model class
+    - Select ApplicationDbContext as dbcontext class
+    - Double check that 'Generate Views' is selected
+    - Double check that 'Use a layout page' is selected
+    - Controller name is taken automatically from the Model class, verify it's 'CategoriesController'
+    - Click Add
+- Wait a few moments, and verify that:
+    - Controller was created under /Controllers
+    - 5 new views were created under /Views/Categories
+- Open /Views/Categories/Index.cshtml
+    - Fix the title, set to 'Categories'
+- Open /Views/Shared/_Layout.cshtml
+    - Add a new \<li> element to navigate to Categories/Index
+- Run the application and open on a browser
+    - Navigate to Categories
+    - Add a few categories
+        - Breakfast
+        - Lunch
+        - Dinner
+
+### Demo 2 Scaffolding controllers and views for CRUD operations (Products)
+- Right click on Controllers
+    - Select Add and then New Scaffolded Item…
+    - Choose MCV Controller with views, using Entity Framework
+    - Select the Product model class
+    - Select ApplicationDbContext as dbcontext class
+    - Double check that 'Generate Views' is selected
+    - Double check that 'Use a layout page' is selected
+    - Controller name is taken automatically from the Model class, verify it's 'ProductsController'
+    - Click Add
+- Wait a few moments, and verify that:
+    - Controller was created under /Controllers
+    - 5 new views were created under /Views/Products
+- Open /Views/Products/Index.cshtml
+    - Fix the title, set to 'Categories'
+- Open /Views/Shared/_Layout.cshtml
+    - Add a new \<li> element to navigate to Products/Index
+- Run the application and open on a browser
+    - Navigate to Products, there are two improvements here:
+        - Look at how the categories dropdown shows only numbers, these are the categories id's but we want to see the names
+        - We'd like to be able to select a photo to upload
+- Open /Controllers/ProductsController.cs
+    - To show category names
+        - Look for the Create() get and post methods
+        - Modify the SelectList constructor to show category Id and Name
+        - Scroll down to the Edit() get and post methods
+        - Modify the SelectList constructor to show category Id and Name
+    - To upload photos
+        - We'll change the input field to type 'file' in the view in a few moments
+        - Write a new method called UploadPhoto() that takes a photo file from the HTML form element as parameter
+            - Get temporary location of uploaded photo
+            - Generate a new filename containing a GUID and the filename to ensure a unique image name
+            - Set the upload destination folder dynamically to wwwroot\imgs\products
+            - Copy the file to the folder
+            - Return the generated filename
+        - Find the Create() post method
+            - Add a parameter called photo of type IFormFile and make it nullable
+            - Write an if statement just before calling _context.add()
+                - Check if photo is not null and then
+                - Retrieve the filename and upload by calling the method previously created
+                - Set the value of the photo attribute in product to the filename
+        - Find the Edit() post method
+            - Add a parameter called photo of type IFormFile and make it nullable
+            - Add another parameter called currentPhoto of type string and make it nullable
+            - Write an if statement just before calling _context.add()
+                - Check if photo is not null and then
+                - Retrieve the filename and upload by calling the method previously created
+                - Set the value of the photo attribute in product to the filename
+                - If photo is null, set the value of photo to currentPhoto
+- Open /Views/Products/Create.cshtml
+    - Modify the photo input type to 'file'
+    - Add enctype="multipart/form-data" attribute to the form element
+- Open /Views/Products/Edit.cshtml
+    - Modify the photo input type to 'file'
+    - Add enctype="multipart/form-data" attribute to the form element
+    - Add a hidden field with name CurrentPhoto and pointing to Photo (same as file upload field)
+- Lastly, add a 'Products' folder inside /wwwroot/imgs
+- Open /Views/Products/Index.cshtml
+    - Replace the html helper for Photo with an if statement
+    - If photo is not null, render an img element
+        - Max-width of 250px
+        - Class set to img-thumbnail
+        - Src pointing to ~/imgs/products/PHOTO
+    - Fix the html helper for category, use Name instead of ID
+- Run the application and open on a browser and navigate to Products
+    - Add a few products for each category
+
+### Demo 3 Adding an empty Store Controller
+- This will be the start of our online store, this page will show categories as cards so that users can navigate our menu
+- Right click on Controllers
+    - Select Add and then New Scaffolded Item…
+    - Choose MCV Controller with views, using Entity Framework
+    - Select the Category model class
+    - Select ApplicationDbContext as dbcontext class
+    - Double check that 'Generate Views' is selected
+    - Double check that 'Use a layout page' is selected
+    - Modify controller name to 'StoreController'
+    - Click Add
+- Wait a few moments, and verify that:
+    - Controller was created under /Controllers
+    - 5 new views were created under /Views/Store
+- Open /Controllers/StoreController.cs
+    - Delete all action methods except index, also leave the constructor in place
+- Go to /Views/Store in the Solution explorer
+    - Delete all views except index
+- Open /Controllers/Shop/Index.cshtml
+    - Remove the default contents in the html body
+    - Modify the page title to read 'Explore our Menu!'
+    - Add a h1 element that reads 'Explore our Menu!'
+    - Add a section element with class row and card-group
+    - Add a for loop to iterate through each element in the categories list
+        - Each time, add a div class 'col-lg-4 mb-3'
+        - Inside of this, add another div class 'card mb-3'
+        - Inside of this, add another div with class 'card-body text-center h-100'
+        - And inside of this div, add an anchor element
+            - Controller points to Shop
+            - Action points to Browse
+            - Route-id is the corresponding category id
+            - Text value is the corresponding category name
+- Open /Views/Shared/_Layout.cshtml
+    - Add a new \<li> element to navigate to Store/Index
+- Run the application and open on a browser and navigate to Store
+    - Click on each category, you should see a blank page
+- We'll continue the store in lesson 09

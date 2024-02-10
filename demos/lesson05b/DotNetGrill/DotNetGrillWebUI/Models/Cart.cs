@@ -1,6 +1,4 @@
-﻿using DotNetGrillWebUI.Models;
-
-namespace DotNetGrill.Models
+﻿namespace DotNetGrillWebUI.Models
 {
     public class Cart
     {

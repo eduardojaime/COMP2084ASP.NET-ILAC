@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace DotNetGrill.Models
+namespace DotNetGrillWebUI.Models
 {
     public class Order
     {
