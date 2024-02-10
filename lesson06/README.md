@@ -39,7 +39,7 @@
     - Controller was created under /Controllers
     - 5 new views were created under /Views/Products
 - Open /Views/Products/Index.cshtml
-    - Fix the title, set to 'Categories'
+    - Fix the title, set to 'Products'
 - Open /Views/Shared/_Layout.cshtml
     - Add a new \<li> element to navigate to Products/Index
 - Run the application and open on a browser
