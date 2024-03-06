@@ -14,6 +14,9 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
+// configure session service, required for using the HttpContext.Session object
+builder.Services.AddSession(); 
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -28,6 +31,7 @@ else
     app.UseHsts();
 }
 
+app.UseSession();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
