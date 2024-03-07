@@ -19,7 +19,7 @@
                     @if (String.IsNullOrEmpty(item.Photo))
                     {
                         <img src="/images/products/no-image.png"
-                             class="img-thumbnail" 
+                             class="img-thumbnail"
                              style="max-width:250px"
                              alt="No Image Available" />
                     }
@@ -30,6 +30,14 @@
                              style="max-width:250px"
                              alt="Photo of @item.Name" />
                     }
+                    <form method="post" action="/Store/AddToCart">
+                        <input type="hidden" id="ProductId" name="ProductId" value="@item.ProductId" />
+                        <div>
+                            <label for="Quantity">Quantity:</label>
+                            <input type="number" id="Quantity" name="Quantity" value="1" min="1" max="100" />
+                        </div>
+                        <button class="btn btn-primary">Add to Cart</button>
+                    </form>
                 </div>
             </div>
         </div>
