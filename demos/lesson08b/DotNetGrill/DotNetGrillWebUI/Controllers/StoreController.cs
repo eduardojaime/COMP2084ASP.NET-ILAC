@@ -24,5 +24,27 @@ namespace DotNetGrillWebUI.Controllers
         {
             return View(await _context.Categories.ToListAsync());
         }
+
+        // GET: Store/Browse/3 (3 is the category id)
+        public async Task<IActionResult> Browse(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            // retrieve a list of products filtered by category id
+            // LINQ query which has a similar sintax to SQL queries but for C#
+            var products = _context.Products
+                .Where(p => p.CategoryId == id)
+                .OrderBy(p => p.Name)
+                .ToList();
+
+            // two ways to send data back to the view
+            // 1) viewbag object
+            ViewBag.CategoryName = _context.Categories.Find(id).Name; // find the category name by id
+            // 2) as a view model
+            return View(products);
+        }
     }
 }
