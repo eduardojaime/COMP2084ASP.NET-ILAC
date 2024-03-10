@@ -11,7 +11,16 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+// Add a third-party authentication service
+builder.Services.AddAuthentication()
+    .AddGoogle(options =>
+    {
+        options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    });
+
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSession();
@@ -37,6 +46,8 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+// UseAuthentication must be called before UseAuthorization to enable third-party login services
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
