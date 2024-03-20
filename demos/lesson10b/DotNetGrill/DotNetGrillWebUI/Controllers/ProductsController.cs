@@ -13,10 +13,14 @@ namespace DotNetGrillWebUI.Controllers
 {
     public class ProductsController : Controller
     {
+        // For DI we need a private readonly field to store the service
+        // As a naming convention, we use an underscore to prefix the field name
         private readonly ApplicationDbContext _context;
-
+        // Use constructor injection to inject the service into the controller
         public ProductsController(ApplicationDbContext context)
         {
+            // Assign the copy of the service to the private field
+            // we can then use the service in the controller's methods
             _context = context;
         }
 
