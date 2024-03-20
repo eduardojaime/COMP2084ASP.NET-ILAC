@@ -1,138 +1,95 @@
 # Instructions
 
-### Demo 1 Authorization using Roles
-- At this point in our application, anybody can create a user and manage our products/categories
-- We want to:
-    - Create two roles: Admin and Customer
-    - Have an admin account
-    - Modify the app to make any new user a Customer
-- Go to Blackboard and retrieve the SQL script to create two roles in the DB
-    - Open on SQL Management Studio or Azure Data Studio
-        - Check AspNetUsers, AspNetRoles, and AspNetRoles tables
-        - Run scripts accordingly
-- Open Program.cs
-    - services.AdddefaultIdentity<>().AddRoles<IdentityRole>().
-    - Save your changes, this configuring roles globally
-- Now, let's customize the registration page to create Admins accounts, specifically the code behind the Register button:
-    - Where are the Login/Register pages? These are hidden in the identity packages
-        - We need to add templates for custom management
-    - Go to /Areas/Identity
-        - Right click Pages > Add scaffolded item
-        - Choose Identity on the left, then Identity again (only option)
-        - Select pages we need > Account\Register
-        - Select Data Context Class > ApplicationDBContext
-        - Click Add
-        - Verify there's a folder called Accounts under /Areas/identity/Pages
-- Open /Areas/Identity/Pages/Account/Register.cshtml
-    - This file that contains the UI that we can now modify
-    - Under register, expand the node to find Register.cshtml.cs which is the code behind for the view
-    - Double click on it to open 
-        - Scroll down to the InputModel class
-            - See validation rules: email, password, and confirm password
-            - We can modify the password validation here if needed
-        - Search for the OnPostAsync method
-            - user and result are where the users actually get created
-                - var user = CreateUser();
-                - var result = await _userManager.CreateAsync(…)
-            - Modify the logic after 'if (result.Succeeded)'
-                - Save new user to Admin role by using _userManager.AddToRoleAsync()
-                - Two parameters:
-                    - User object we just created
-                    - Role name (string) that must match what's on the DB
-- Run the project:
-    - Go to register
-    - Create new account
-    - Open MSSQL Management Studio or Azure Data Studio and query the AspNetUserRoles table
-    - Verify that new user is linked to role id 1
-- Back to /Areas/Identity/Pages/Account/Register.cshtml.cs
-        - Modify the role name
-        - Register two more users
-        - Check AspNetUserRoles table > new users must be linked to role id 2
-- Our application is only implementing Authentication so for now any user in any role can access all the admin pages. We want to change these security rules:
-- Open /Views/Shared/_Layout.cshtml
-    - Modify User.Identity.IsAuthenticated to User.IsInRole("Administrator")
-        - Remember role names are case sensitive
-- Open /Controllers/Categories.cs
-    - Modify the Authorize attribute to include (Roles = "Administrator")
-    - Login is not sufficient for accessing this controller, user must be an administrator as well
-- Open /Controllers/Products.cs
-    - Modify the Authorize attribute to include (Roles = "Administrator")
-- Run the application
-    - Login as a customer
-    - Login as an admin
+### Demo 1 Improving our Shopping Cart page
+- Open /Views/Shared/Layout.cshtml
+    - On a browser, navigate to Google Fonts Material Icons > https://fonts.google.com/icons?selected=Material+Symbols+Outlined:shopping_cart:FILL@0;wght@400;GRAD@0;opsz@48&icon.query=shop
+    - Add reference to material icons stylesheet
+    - Add icon link to navigate to /Store/Cart
+- Open /Views/Store/Cart.cshtml
+    - Modify title to 'Your Cart'
+    - Get rid of 'Create New' link
+    - Add the following bootstrap classes to the table:
+        - table-striped
+        - table-hover
+    - Remove the following columns from the table:
+        - CustomerId
+        - DateCreated
+    - Move the product column to the first position
+    - Add an extra table header with no text for the image thumbnail
+    - Go to the foreach loop section:
+        - Show product name in the first column
+        - Remove CustomerId and DateCreated
+        - Remove Edit and Details links
+        - Add extra column for showing the thumbnail image
+        - Modify the Delete link to point to a new action method called RemoveFromCart
+- Run the application and add a new item to the cart
+    - It will show an  "Object reference not set to an instance of an object" error or not show Product name
+    - This is due to the way the model was created. We need to include Product information with each shopping cart item.
+- Open /Controllers/StoreController.cs
+    - Go the Cart action method
+    - Add .Include(c => c.Product) to the LINQ query that gets the Carts
+- Run the application again and verify. It only needs a few more changes
+    - Generally, numbers should be right-aligned and text should be left-aligned.
+    - Summarize total
+    - Show Checkout and Keep Shopping links
+- Open /Views/Store/Cart.cshtml
+    - Inside the foreach loop
+        - Add the text-right bootstrap class to all number columns
+        - Format the price as currency using ToString("C")
+        - Add a link to the product name to navigate to product details
+    - Display the total amount and buttons
+        - Use the ViewBag object to store the value of the sum of all prices, use this value in the view to display total
+        - Add up each product price on each iteration of the loop
+        - Add another row at the bottom of the table to display the total
+        - Add two buttons at the bottom of the page: 
+            - Keep Shopping > navigates to /Store/Index
+            - Checkout > navigates to /Store/Checkout
+- Open /Controllers/StoreController.cs
+    - Create an action method for RemoveFromCart that accepts an int as parameter
+    - Use a LINQ query to remove item from the Cart
+    - Redirect back to Cart action method
+        
+### Demo 2 Handling Checkout
+- Open /Controllers/StoreController.cs
+    - Create a new action result called Checkout
+    - Return View()
+    - Apply the [Authorize] decorator to this action method to make sure only authenticated users can checkout. Anonymous users can add products to the cart but only authenticated users can actually shop.
+- Right click in /Views/Store folder
+    - Add > View > Razor View
+    - Set view name to Checkout
+    - Select the Create Template
+    - Model class is Order
+    - Click Add
+- Run the application and verify these buttons.
+- What can be improved on the Checkout view?
+- Open /Views/Store/Checkout.cshtml
+    - Remove Total, OrderDate and CustomerId which can be added programmatically
+    - Modify input for address and make it a textArea element with a corresponding closing tag
+    - Modify Submit button to read "Payment >>"
+    - Add a required attribute for all input elements
+- Open /Models/Order.cs
+    - Add a Display decorator to PostalCode, FirstName, and LastName to add labels with a space
+- Open /Controllers/StoreController.cs
+    - Add a POST action method for Checkout()
+        - Add the ValidateAntiForgeryToken to the action method to protect from CSRF attacks
+        - Use [Bind()] to bind input values coming from the form to an Order object
+        - Generate values for the following properties
+            - OrderDate with the current UTC date
+            - CustomerId from GetCustomerId()
+            - Total calculated using LINQ
+        - Use SessionsExtension object to store the order object
+        - Redirect to Payment action method
 
-### Demo 2 Configuring Google Authentication
-- Run the application:
-    - Navigate to login
-    - Verify that there aren't any third party authentication mechanisms enabled
-- Open a browser and navigate to https://console.cloud.google.com
-    - Create a new project
-    - Select project to go to dashboard
-    - Click on Go to APIs & Services
-        - Click on Oauth consent screen
-            - Choose external
-            - Click Create
-            - Enter Application Name
-            - Leave the rest blank for now
-            - Click Save
-        - Click on Credentials
-            - Create Credentials 
-            - Choose Oauth Client ID
-            - Select Application Type > Web Application
-            - Enter a descriptive name
-            - In  'Authorized redirect URIs' section, click on Add URI 
-                - Provide the link to our signin page:
-                    - localhost:1234/signin-google
-                - This value has to be provided for your Azure website as well
-            - Click Create
-            - Copy API Keys (client id and client secret) displayed
-        - Noite: Might need to publish the consent page
-- Go back to Visual Studio
-    - In appsettings.json
-        - Create a section called Authentication for our Google Keys
-        - Inside, create a section called Google
-        - Inside, create two values:
-            - ClientId
-            - ClientSecret
-        - Copy the keys here
-    - Open Nuget Package Manager
-        - Search for Microsoft.AspNetCore.Authentication.Google
-        - Install latest version corresponding to the .NET version utilized in the project
-    - Open Program.cs
-        - Enable Google Authentication when our app starts
-        - Add a call to AddDefaultIdentity() method in the configure services section, pass clientId and clientSecret as options
-- Run the application and open on a browser
-    - Navigate to login
-    - Click Google
-    - Open MSSQL Management Studio or Azure Data Studio and verify the AspUserLogins table
-- Modify the registration page to create Admins accounts, specifically the code behind the Register button:
-    - Where are these? Login/Register pages are hidden by the identity packages
-        - We need to add templates for custom management
-    - Go to /Areas/Identity
-    - Right click Pages > Add scaffolded item
-    - Choose Identity on the left, then Identity again (only option)
-    - Select pages we need > ExternalLogin
-    - Select Data Context Class > ApplicationDBContext
-    - Scroll down to line 126 > await_userManager.createAsync()
-        - After the result.succeeded if statement, add a line of code to add users to role "Customer"
-
-### Demo 3 Protecting your keys by adding them to a secret store
-- Open the Package Manager Console
-- If you haven't configured user-secrets in your project yet:
-    - Navigate to your project folder
-        - Dir
-        - cd <folder>
-    - Run the following commands:
-        - dotnet user-secrets init
-- If you already configured user-secrets run the following two commands:
-    - dotnet user-secrets set "Authentication:Google:ClientId" "KEYFROMGOOGLE"
-    - dotnet user-secrets set "Authentication:Google:ClientSecret" "KEYFROMGOOGLE"
-- In appsettings.json
-    - Replace client id and client secret values with \<secret>
-- Note: you can always see what user secrets you have added in JSON format
-    - Right click on the solution name
-    - Choose 'Manage User Secrets'
-    - This will open a configuration file in JSON format containing your local project secrets
-- Run the application
-    - Try using Google to login once more
-These will only work locally for now
+### Demo 3 Implementing SessionExtensions
+- Navigate to https://www.talkingdotnet.com/store-complex-objects-in-asp-net-core-session/
+- Add a new folder to your solution called Extensions
+- Add a new class called SessionExtensions
+    - Make it static
+    - Copy over SetObject and GetObject methods from the tutorial link
+    - Add the required using statements at the top of your class:
+        - Microsoft.AspNetCore.Http
+        - Newtonsoft.Json
+    - Include the link as a reference in the comment
+- Open /Controllers/StoreController.cs
+    - Import the Extensions namespace to be able to access the extension methods
+- Add the order object to a session variable using SetObject
