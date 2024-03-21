@@ -12,8 +12,12 @@ namespace DotNetGrillWebUI.Controllers
 {
     public class StoreController : Controller
     {
+        // Private field that will hold a reference to the dbcontext object provided via DI
         private readonly ApplicationDbContext _context;
-
+        // Constructor Method
+        // ASP.NET MVC initializes the controller automatically when needed
+        // and will provide a copy of all registered services via DI
+        // if we need to use a specific service we can ask for it in the constructor
         public StoreController(ApplicationDbContext context)
         {
             _context = context;

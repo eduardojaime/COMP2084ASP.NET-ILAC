@@ -3,17 +3,19 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
+// Services must be added after creating the builder object
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+// DI for adding a DbContext to my application
+// I'm telling app to use a SQL Server database provider based on ApplicationDbContext class
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+// DI for adding Identity mechanism to my application
+builder.Services.AddDefaultIdentity<IdentityUser>(
+    options => options.SignIn.RequireConfirmedAccount = false)
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
-// Add a third-party authentication service
+// DI for adding third-party authentication mechanism to my application
 builder.Services.AddAuthentication()
     .AddGoogle(options =>
     {
@@ -24,7 +26,7 @@ builder.Services.AddAuthentication()
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSession();
-
+// Services must be added before calling builder.Build()
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
