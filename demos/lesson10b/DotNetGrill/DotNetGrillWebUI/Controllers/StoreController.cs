@@ -102,7 +102,7 @@ namespace DotNetGrillWebUI.Controllers
             _context.Carts.Remove(cart);
             _context.SaveChanges();
             // redirect to the Cart action method
-            return Redirect("Cart");
+            return RedirectToAction("Cart");
         }
 
         private string GetCustomerId()
