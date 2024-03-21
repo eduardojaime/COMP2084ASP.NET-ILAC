@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using DotNetGrillWebUI.Data;
 using DotNetGrillWebUI.Models;
 using Microsoft.AspNetCore.Authorization;
+using DotNetGrillWebUI.Extensions;
 
 namespace DotNetGrillWebUI.Controllers
 {
@@ -127,9 +128,10 @@ namespace DotNetGrillWebUI.Controllers
                 .Sum(c => (c.Price * c.Quantity));
             // all other properties will be populated from the form
 
-            // TODO: Store order object in session, so I can retrieve it AFTER payment is successfull
+            // Store order object in session, so I can retrieve it AFTER payment is successfull
             // Once this happens, I'll retrieve the order, save it to the db and remove the carts
-
+            HttpContext.Session.SetObject("Order", order);
+            
             // redirect to the Payment action method
             return RedirectToAction("Payment");
         }
