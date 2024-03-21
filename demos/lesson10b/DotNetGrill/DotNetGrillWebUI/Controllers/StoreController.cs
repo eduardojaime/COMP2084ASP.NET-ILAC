@@ -75,12 +75,34 @@ namespace DotNetGrillWebUI.Controllers
             // retrieve customer id
             var customerId = GetCustomerId();
             // retrieve carts associated to them
-            var carts = _context.Carts
-                .Where(c => c.CustomerId == customerId)
-                .OrderByDescending(c => c.DateCreated)
+            var carts = _context.Carts  //                  SELECT * FROM Carts c 
+                 // include the product object to avoid lazy loading
+                .Include(c => c.Product) //                 JOIN Products p ...
+                .Where(c => c.CustomerId == customerId) //  WHERE c.CustomerId = 'customerId'
+                .OrderByDescending(c => c.DateCreated) //   ORDER BY c.DateCreated DESC
                 .ToList();
+            // LINQ to calculate total price
+            var totalAmount = carts.Sum(c => (c.Price * c.Quantity)).ToString("C");
+            // send the total amount to the view
+            ViewBag.TotalAmount = totalAmount;
             // return a view with the list of carts
             return View(carts);
+        }
+
+        // GET: Store/RemoveFromCart/5 (5 is the cart id)
+        public IActionResult RemoveFromCart(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            // retrieve the cart object by id
+            var cart = _context.Carts.Find(id);
+            // remove it from the db
+            _context.Carts.Remove(cart);
+            _context.SaveChanges();
+            // redirect to the Cart action method
+            return Redirect("Cart");
         }
 
         private string GetCustomerId()
