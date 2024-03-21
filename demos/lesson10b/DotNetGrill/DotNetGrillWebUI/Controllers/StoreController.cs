@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using DotNetGrillWebUI.Data;
 using DotNetGrillWebUI.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DotNetGrillWebUI.Controllers
 {
@@ -104,6 +105,36 @@ namespace DotNetGrillWebUI.Controllers
             // redirect to the Cart action method
             return RedirectToAction("Cart");
         }
+
+        // GET: Store/Checkout
+        // It should only be accessible to authenticated users
+        [Authorize]
+        public IActionResult Checkout() { 
+            return View();
+        }
+
+        // POST: Store/Checkout
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken] // prevent CSRF attacks where someone else tries to submit a form on behalf of the user
+        public IActionResult Checkout([FromForm] Order order)
+        {
+            // populate the 3 special order properties: DateCreated, CustomerId, Total
+            order.DateCreated = DateTime.UtcNow; // always use UTC time to store datetimes in your dbs
+            order.CustomerId = GetCustomerId();
+            order.Total = _context.Carts
+                .Where(c => c.CustomerId == order.CustomerId)
+                .Sum(c => (c.Price * c.Quantity));
+            // all other properties will be populated from the form
+
+            // TODO: Store order object in session, so I can retrieve it AFTER payment is successfull
+            // Once this happens, I'll retrieve the order, save it to the db and remove the carts
+
+            // redirect to the Payment action method
+            return RedirectToAction("Payment");
+        }
+
+        // TODO: Payment action method
 
         private string GetCustomerId()
         {
