@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using DotNetGrillWebUI.Data;
 using DotNetGrillWebUI.Models;
 using Microsoft.AspNetCore.Authorization;
+using DotNetGrillWebUI.Extensions; // to enable GetObject and SetObject methods from Session
 
 namespace DotNetGrillWebUI.Controllers
 {
@@ -130,8 +131,9 @@ namespace DotNetGrillWebUI.Controllers
                             .Where(c => c.CustomerId == order.CustomerId)
                             .Sum(c => (c.Price * c.Quantity)); // calculate based on the cart items
 
-            // TODO: Store order object in session store temporarily
+            // Store order object in session store temporarily
             // Once payment is complete, I'll create the order record in the db
+            HttpContext.Session.SetObject("Order", order);
 
             // Redirect to a payment page
             return RedirectToAction("Payment");
