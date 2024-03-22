@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using DotNetGrillWebUI.Data;
 using DotNetGrillWebUI.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DotNetGrillWebUI.Controllers
 {
@@ -54,7 +55,8 @@ namespace DotNetGrillWebUI.Controllers
         // POST: Store/AddToCart
         // values expected: ProductId, Quantity
         [HttpPost]
-        public IActionResult AddToCart([FromForm] int ProductId, [FromForm] int Quantity) {
+        public IActionResult AddToCart([FromForm] int ProductId, [FromForm] int Quantity)
+        {
             // get or generate a customer id
             var customerId = GetCustomerId();
             // query the db to get current product price
@@ -75,7 +77,8 @@ namespace DotNetGrillWebUI.Controllers
         }
 
         // GET: Store/Cart
-        public IActionResult Cart() { 
+        public IActionResult Cart()
+        {
             // retrieve customer id
             var customerId = GetCustomerId();
             // retrieve carts associated to them
@@ -93,7 +96,8 @@ namespace DotNetGrillWebUI.Controllers
         }
 
         // GET: Store/RemoveFromCart/5 (5 is the cart id)
-        public IActionResult RemoveFromCart(int? id) { 
+        public IActionResult RemoveFromCart(int? id)
+        {
             // Retrieve the cart object by id
             var cart = _context.Carts.Find(id);
             // Remove it from the Carts DbSet
@@ -103,6 +107,37 @@ namespace DotNetGrillWebUI.Controllers
             // Redirect to cart page
             return RedirectToAction("Cart");
         }
+
+        // GET: Store/Checkout
+        [Authorize]
+        public IActionResult Checkout()
+        {
+            return View();
+        }
+
+        // POST: Store/Checkout
+        [HttpPost] // this action method will only respond to POST requests
+        [ValidateAntiForgeryToken] // this attribute will check for a valid antiforgery token
+        [Authorize] // this attribute will check if the user is authenticated
+        // Model Binding: the parameters of the method will be automatically populated with the values
+        // from the form, and inthis case create an object
+        public IActionResult Checkout([FromForm] Order order)
+        {
+            // populate the 3 special order properties: DateCreated, CustomerId, Total
+            order.DateCreated = DateTime.UtcNow; // always use UTC time to store datetimes in your dbs
+            order.CustomerId = GetCustomerId();
+            order.Total = _context.Carts
+                            .Where(c => c.CustomerId == order.CustomerId)
+                            .Sum(c => (c.Price * c.Quantity)); // calculate based on the cart items
+
+            // TODO: Store order object in session store temporarily
+            // Once payment is complete, I'll create the order record in the db
+
+            // Redirect to a payment page
+            return RedirectToAction("Payment");
+        }
+
+        // TODO: Add a Payment action method
 
         private string GetCustomerId()
         {
