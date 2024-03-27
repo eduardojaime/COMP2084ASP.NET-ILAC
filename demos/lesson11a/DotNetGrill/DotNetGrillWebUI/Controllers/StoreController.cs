@@ -9,6 +9,8 @@ using DotNetGrillWebUI.Data;
 using DotNetGrillWebUI.Models;
 using Microsoft.AspNetCore.Authorization;
 using DotNetGrillWebUI.Extensions; // to enable GetObject and SetObject methods from Session
+using Stripe.Checkout;
+using Stripe;
 
 namespace DotNetGrillWebUI.Controllers
 {
@@ -16,13 +18,15 @@ namespace DotNetGrillWebUI.Controllers
     {
         // Private field that will hold a reference to the dbcontext object provided via DI
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration;
         // Constructor Method
         // ASP.NET MVC initializes the controller automatically when needed
         // and will provide a copy of all registered services via DI
         // if we need to use a specific service we can ask for it in the constructor
-        public StoreController(ApplicationDbContext context)
+        public StoreController(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         // GET: Store
@@ -139,7 +143,91 @@ namespace DotNetGrillWebUI.Controllers
             return RedirectToAction("Payment");
         }
 
-        // TODO: Add a Payment action method
+        // GET: Store/Payment
+        [Authorize]
+        public IActionResult Payment()
+        {
+            // Retrieve the order object from the session store to get Total Amount
+            var order = HttpContext.Session.GetObject<Order>("Order");
+            ViewBag.TotalAmount = order.Total.ToString("C");
+            ViewBag.TotalAmountInCents = order.Total * 100; // convert to cents for Stripe
+            ViewBag.PublishableKey = _configuration["Payments:Stripe:Publishable_Key"];
+            return View();
+        }
+
+        // POST: Store/Payment
+        // This happens when user clicks on the "Pay" button in the Payment view
+        [HttpPost]
+        public IActionResult PaymentPost() { 
+            // Retrieve the order object from the session store
+            var order = HttpContext.Session.GetObject<Order>("Order");
+            // Retrieve secret key from configuration
+            StripeConfiguration.ApiKey = _configuration["Payments:Stripe:Secret_Key"];
+            // Create a stripe charge object
+            var options = new SessionCreateOptions
+            {
+                LineItems = new List<SessionLineItemOptions>
+                {
+                  new SessionLineItemOptions
+                  {
+                    PriceData = new SessionLineItemPriceDataOptions // customize info for purchase
+                    {
+                      UnitAmount = (long)(order.Total * 100), // convert to cents
+                      Currency = "cad",
+                      ProductData = new SessionLineItemPriceDataProductDataOptions
+                      {
+                        Name = "DotNetGrill Purchase",
+                      },
+                    },
+                    Quantity = 1,
+                  },
+                },
+                PaymentMethodTypes = new List<string> // indicate which methods we accept
+                {
+                  "card",
+                },
+                Mode = "payment",
+                SuccessUrl = $"https://{Request.Host}/Store/SaveOrder", // where to go if successful?
+                CancelUrl = $"https://{Request.Host}/Store/Cart", // where to go if cancelled?
+            };
+            // Create a stripe service object to initialize the session
+            var service = new SessionService();
+            // Initialize Stripe session
+            Session session = service.Create(options);
+            // Pass session id back to the view for javascript to handle the payment
+            return Json(new { id = session.Id });
+        }
+
+        // GET: Store/SaveOrder
+        // This method will be called by Stripe after a successful payment
+        public IActionResult SaveOrder() { 
+            // Retrieve the order object from the session store
+            var order = HttpContext.Session.GetObject<Order>("Order");
+            // Save order in the db
+            _context.Orders.Add(order);
+            _context.SaveChanges();
+            // Get CustomerId for storing cart items
+            var customerId = GetCustomerId();
+            // Retrieve cart items
+            var carts = _context.Carts.Where(c => c.CustomerId == customerId);
+            // Iterate over each cart item and store in db
+            foreach (var cart in carts)
+            {
+                var orderDetail = new OrderItem
+                {
+                    OrderId = order.OrderId,
+                    ProductId = cart.ProductId,
+                    Quantity = cart.Quantity,
+                    Price = cart.Price
+                };
+                _context.OrderItems.Add(orderDetail); // add order detail record to db
+                _context.Carts.Remove(cart); // remove cart after using it
+            }
+            // Save changes 
+            _context.SaveChanges();
+            // Redirect to the order details page
+            return RedirectToAction("Details", "Orders", new { @id = order.OrderId });
+        }
 
         private string GetCustomerId()
         {
