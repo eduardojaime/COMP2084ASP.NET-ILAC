@@ -15,10 +15,13 @@ namespace DotNetGrillWebUI.Controllers
     public class StoreController : Controller
     {
         private readonly ApplicationDbContext _context;
-
-        public StoreController(ApplicationDbContext context)
+        // Use the configuration object to access values from appsettings.json
+        private readonly IConfiguration _configuration;
+        // Use DI to request the ApplicationDbContext and IConfiguration objects on controller creation
+        public StoreController(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         // GET: Store
@@ -136,7 +139,20 @@ namespace DotNetGrillWebUI.Controllers
             return RedirectToAction("Payment");
         }
 
-        // TODO: Payment action method
+        // GET: Store/Payment
+        public IActionResult Payment()
+        {
+            // retrieve the order object from the session
+            var order = HttpContext.Session.GetObject<Order>("Order"); 
+            // pass total to view in the viewbag object to display amount
+            ViewBag.TotalAmount = order.Total.ToString("C"); // format decimal as string currency $xx.xx
+            // TODO: implement payment gateway integration
+            // Add publishable key to the viewbag object
+            ViewBag.PublishableKey = _configuration["Payments:Stripe:Publishable_Key"];
+            return View();
+        }
+
+        // TODO: implement a POST Payment action method to handle the payment response
 
         private string GetCustomerId()
         {
