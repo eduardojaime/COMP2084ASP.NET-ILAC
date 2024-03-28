@@ -9,6 +9,8 @@ using DotNetGrillWebUI.Data;
 using DotNetGrillWebUI.Models;
 using Microsoft.AspNetCore.Authorization;
 using DotNetGrillWebUI.Extensions;
+using Stripe.Checkout;
+using Stripe;
 
 namespace DotNetGrillWebUI.Controllers
 {
@@ -152,7 +154,76 @@ namespace DotNetGrillWebUI.Controllers
             return View();
         }
 
-        // TODO: implement a POST Payment action method to handle the payment response
+        // Implement a POST Payment action method to handle the payment response
+        [HttpPost]
+        public IActionResult Payment(string? stripeToken)
+        {
+            // retrieve the order object from the session
+            var order = HttpContext.Session.GetObject<Order>("Order");
+            // retrieve the secret key from the configuration object
+           StripeConfiguration.ApiKey = _configuration["Payments:Stripe:Secret_Key"];
+            // create a stripe session options object
+            var options = new SessionCreateOptions
+            {
+                PaymentMethodTypes = new List<string> { "card" },
+                LineItems = new List<SessionLineItemOptions>
+                {
+                    new SessionLineItemOptions
+                    {
+                        PriceData = new SessionLineItemPriceDataOptions
+                        {
+                            Currency = "cad",
+                            ProductData = new SessionLineItemPriceDataProductDataOptions
+                            {
+                                Name = "DotNetGrill Purchase",
+                            },
+                            UnitAmount = (long)(order.Total * 100) // convert decimal to cents
+                        },
+                        Quantity = 1
+                    }
+                },
+                Mode = "payment",
+                SuccessUrl = $"https://{Request.Host}/Store/SaveOrder",
+                CancelUrl = $"https://{Request.Host}/Store/Cart"
+            };
+            // create a stripe service object
+            var service = new SessionService();
+            // use the service object to create a session
+            Session session = service.Create(options);
+            // return the session id to the view, then JavaScript will redirect to the payment page on Stripe.com
+            return Json(new { id = session.Id });
+        }
+
+        // Implement a SaveOrder action method to save the order to the db after payment is successfull
+        // GET: Store/SaveOrder
+        public IActionResult SaveOrder() { 
+            // retrieve order object from session
+            var order = HttpContext.Session.GetObject<Order>("Order");
+            // save it in db
+            _context.Orders.Add(order);
+            _context.SaveChanges();
+            // get the customer id
+            var customerId = GetCustomerId();
+            // get carts for customer id
+            var cartItems = _context.Carts.Where(c => c.CustomerId == customerId);
+            // iterate through carts list and for each: create an orderitem, and delete the current cart item
+            foreach (var cartItem in cartItems)
+            {
+                var orderItem = new OrderItem
+                {
+                    OrderId = order.OrderId,
+                    ProductId = cartItem.ProductId,
+                    Quantity = cartItem.Quantity,
+                    Price = cartItem.Price
+                };
+                _context.OrderItems.Add(orderItem); // save new orderitem in db
+                _context.Carts.Remove(cartItem); // remove cartItem from db, no longer needed
+            }
+            // save the orderitem in db
+            _context.SaveChanges();
+            // redirect user to /Order/Details/OrderId
+            return RedirectToAction("Details", "Orders", new { @id = order.OrderId });
+        }
 
         private string GetCustomerId()
         {
