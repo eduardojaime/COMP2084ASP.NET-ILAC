@@ -8,7 +8,10 @@ using Microsoft.EntityFrameworkCore;
 using DotNetGrillWebUI.Data;
 using DotNetGrillWebUI.Models;
 using Microsoft.AspNetCore.Authorization;
-using DotNetGrillWebUI.Extensions; // to enable GetObject and SetObject methods from Session
+using DotNetGrillWebUI.Extensions;
+using System.Globalization; // to enable GetObject and SetObject methods from Session
+using Stripe; // to configure stripe
+using Stripe.Checkout; // to create session related objects
 
 namespace DotNetGrillWebUI.Controllers
 {
@@ -157,6 +160,81 @@ namespace DotNetGrillWebUI.Controllers
         }
 
         // POST: Store/Payment
+        // Use method overload to accept a stripeToken
+        [HttpPost]
+        public IActionResult Payment(string? stripeToken)
+        {
+            // Retrieve order object from session
+            var order = HttpContext.Session.GetObject<Order>("Order");
+            // Configure Stripe.NET with the secret key
+            // always handle secret keys in the code behind, never in JS or front-end code
+            StripeConfiguration.ApiKey = _configuration["Payments:Stripe:Secret_Key"];
+            // Create a charge object with the token and the total amount
+            var options = new SessionCreateOptions
+            {
+                PaymentMethodTypes = new List<string> { "card" },
+                LineItems = new List<SessionLineItemOptions>
+                {
+                    new SessionLineItemOptions
+                    {
+                        PriceData = new SessionLineItemPriceDataOptions
+                        {
+                            UnitAmount = (long)(order.Total * 100), // convert to cents
+                            Currency = "cad",
+                            ProductData = new SessionLineItemPriceDataProductDataOptions
+                            {
+                                Name = "DotNetGrill Purchase"
+                            }
+                        },
+                        Quantity = 1
+                    }
+                },
+                Mode = "payment",
+                SuccessUrl = $"https://{Request.Host}/Store/SaveOrder",
+                CancelUrl = $"https://{Request.Host}/Store/Cart"
+            };
+            // Create a service object
+            var service = new SessionService();
+            // Use the service object to create the session
+            var session = service.Create(options);
+            // Return the session id to the view as JSON response
+            return Json(new { id = session.Id });
+        }
+
+        // GET: Store/SaveOrder
+        // This action method will be called by Stripe after payment is complete
+        public IActionResult SaveOrder() 
+        { 
+            // Retrieve order object from session
+            var order = HttpContext.Session.GetObject<Order>("Order");
+            // and create a new order record in the db
+            _context.Orders.Add(order); // INSERT INTO Orders
+            _context.SaveChanges(); // Persist changes in the DB
+            // get customer id
+            var customerId = GetCustomerId();
+            // get carts for customer
+            var carts = _context.Carts.Where(c => c.CustomerId == customerId);
+            // iterate over carts
+            foreach (var cart in carts)
+            {
+                // for each cart create an order detail object and remove the cart
+                var orderItem = new OrderItem
+                {
+                    OrderId = order.OrderId,
+                    ProductId = cart.ProductId,
+                    Quantity = cart.Quantity,
+                    Price = cart.Price // not from product because price could change
+                };
+                _context.OrderItems.Add(orderItem); // INSERT INTO OrderItems
+                _context.Carts.Remove(cart); // DELETE FROM Carts
+            }
+            // save changes
+            _context.SaveChanges(); // Persist changes in the DB
+            // redirect to orders history page
+            // specify action method, controller, and parameters for redirection
+            // e.g. /Orders/Details/5
+            return RedirectToAction("Details", "Orders", new { id = order.OrderId });
+        }
 
         private string GetCustomerId()
         {
