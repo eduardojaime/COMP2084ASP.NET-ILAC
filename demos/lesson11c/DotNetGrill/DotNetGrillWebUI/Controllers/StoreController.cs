@@ -16,13 +16,17 @@ namespace DotNetGrillWebUI.Controllers
     {
         // Private field that will hold a reference to the dbcontext object provided via DI
         private readonly ApplicationDbContext _context;
+        // Use DI to request an instance of the configuration object
+        private readonly IConfiguration _configuration;
         // Constructor Method
         // ASP.NET MVC initializes the controller automatically when needed
         // and will provide a copy of all registered services via DI
         // if we need to use a specific service we can ask for it in the constructor
-        public StoreController(ApplicationDbContext context)
+        // request an instance of configuration object in the constructor
+        public StoreController(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         // GET: Store
@@ -139,7 +143,20 @@ namespace DotNetGrillWebUI.Controllers
             return RedirectToAction("Payment");
         }
 
-        // TODO: Add a Payment action method
+        // GET: Store/Payment
+        public IActionResult Payment()
+        {
+            // Retrieve order object from session
+            var order = HttpContext.Session.GetObject<Order>("Order");
+            // Pass total amount to view using the ViewBag object
+            ViewBag.TotalAmount = order.Total.ToString("C");
+            // Pass PublishableKey to view using the ViewBag object
+            ViewBag.PublishableKey = _configuration["Payments:Stripe:Publishable_Key"];
+            // Return the view
+            return View();
+        }
+
+        // POST: Store/Payment
 
         private string GetCustomerId()
         {
