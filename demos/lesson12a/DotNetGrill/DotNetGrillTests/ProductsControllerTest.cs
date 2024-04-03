@@ -83,8 +83,5 @@ namespace DotNetGrillTests
             // Assert: Verify result returned statusCode 404 NOT FOUND
             Assert.AreEqual(404, result.StatusCode);
         }
-
-
-
     }
 }
