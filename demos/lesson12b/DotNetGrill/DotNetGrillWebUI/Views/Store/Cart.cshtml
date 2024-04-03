@@ -1,0 +1,66 @@
+﻿@model IEnumerable<DotNetGrillWebUI.Models.Cart>
+
+@{
+    ViewData["Title"] = "My Cart";
+}
+
+<h1>My Cart</h1>
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th></th>
+            <th>
+                @Html.DisplayNameFor(model => model.Product)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Price)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Quantity)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @if (item.Product.Photo != null)
+                    {
+                        <img src="/images/products/@item.Product.Photo" class="img-thumbnail"
+                             style="max-width:150px;" alt="Image of @item.Product.Name" />
+                    }
+                    else
+                    {
+                        <img src="~/images/no-image.png" class="img-thumbnail"
+                             style="max-width:150px;" alt="No Image Available" />
+                    }
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Product.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Price)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Quantity)
+                </td>
+                <td>
+                    <a asp-action="RemoveFromCart" asp-route-id="@item.CartId">Delete</a>
+                </td>
+            </tr>
+        }
+        <tr>
+            <td colspan="2" class="text-right">Total: </td>
+            <td class ="text-right">@ViewBag.TotalAmount</td>
+            <td colspan="2"></td>
+        </tr>
+    </tbody>
+</table>
+@* Add navigation options *@
+<div class="col-12 mb-auto text-info">
+    <a class="btn btn-primary" asp-action="Index">Continue Shopping</a>
+    <a class="btn btn-success" asp-action="Checkout">Checkout</a>
+</div>
