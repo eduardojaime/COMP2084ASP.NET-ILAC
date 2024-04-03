@@ -8,7 +8,7 @@ using DotNetGrillWebUI.Controllers; // access to the ProductsController class
 using DotNetGrillWebUI.Models; // access to the Product class
 using DotNetGrillWebUI.Data; // access to the ApplicationDbContext class
 using Microsoft.EntityFrameworkCore; // access to the DbContextOptionsBuilder class
-using Microsoft.AspNetCore.Mvc; 
+using Microsoft.AspNetCore.Mvc;
 
 namespace DotNetGrillTests
 {
@@ -42,12 +42,12 @@ namespace DotNetGrillTests
             var category = new Category { CategoryId = 1, Name = "Breakfast" };
             _context.Categories.Add(category);
             _context.SaveChanges(); // same as when using _context in the controller classes
-
-            var product1 = new Product { ProductId = 1, Name = "Tacos", Category = category };
-            var product2 = new Product { ProductId = 2, Name = "Burritos", Category = category };
-            var product3 = new Product { ProductId = 3, Name = "Tamales", Category = category };
+            // Make sure to include ALL required attributes
+            var product1 = new Product { ProductId = 1, Name = "Tacos", Description = "Test", Price = 10, Rating = 10, Category = category };
+            var product2 = new Product { ProductId = 2, Name = "Burritos", Description = "Test", Price = 10, Rating = 10, Category = category };
+            var product3 = new Product { ProductId = 3, Name = "Tamales", Description = "Test", Price = 10, Rating = 10, Category = category };
             _context.Products.AddRange(product1, product2, product3); // add 3 products to the context
-            _context.SaveChanges(); 
+            _context.SaveChanges();
 
             // Also add them to the mock list of products
             _products = new List<Product> { product1, product2, product3 };
@@ -57,9 +57,33 @@ namespace DotNetGrillTests
         }
 
         // Test 1) Test that Index method returns a list of products
-        
+        [TestMethod]
+        public void IndexReturnsListOfProducts()
+        {
+            // Arrange: No need to arrange anything here, everything is already set up in TestInitialize() 
+            // Act: Call the Index method of the controller
+            var result = _controller.Index().Result as ViewResult;
+            var model = result.Model as List<Product>;
+            // sort the list of products by name to compare it later with the mock list
+            var sortedModel = model.OrderBy(p => p.Name).ToList();
+            // sort the mock list of products by name to compare it later with the model
+            var sortedProducts = _products.OrderBy(p => p.Name).ToList();
+            // Assert: Check that the result is not null and that the model is a list of products
+            // Use CollectionAssert to compare the two lists
+            CollectionAssert.AreEqual(sortedProducts, sortedModel);
+        }
 
         // Test 2) Test that Details method returns NotFound when id is null or a non-existent product id
+        [TestMethod]
+        public void DetailsReturnsNotFoundWhenIdDoesntExist() { 
+            // Arrange: data has already been prepared, set non-existent id
+            int nonExistentId = 4;
+            // Act: Call the Details method of the controller with a non-existent product id
+            var result = _controller.Details(nonExistentId).Result as NotFoundResult;
+            // Assert: Verify result returned statusCode 404 NOT FOUND
+            Assert.AreEqual(404, result.StatusCode);
+        }
+
 
 
     }
