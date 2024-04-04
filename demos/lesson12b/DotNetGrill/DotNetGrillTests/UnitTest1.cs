@@ -11,7 +11,7 @@ namespace DotNetGrillTests
         {
             // Arrange - define variables and set up the test data
             int x = 10;
-            int y = 9;
+            int y = 5;
             int expected = 15;
             // Act - perform the operation that you want to test
             int actual = x + y; // this should be a call to the method that you want to test
