@@ -26,8 +26,16 @@ builder.Services.AddAuthentication()
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSession();
+
+// enable swaggerUI in services
+builder.Services.AddSwaggerGen();
+
 // Services must be added before calling builder.Build()
 var app = builder.Build();
+
+// enable swaggerUI in app
+app.UseSwagger();
+app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "DotNetGrillWebUI v1"));
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
