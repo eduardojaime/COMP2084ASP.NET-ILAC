@@ -25,6 +25,14 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
+                        @* Add two more list items for about and contact *@
+                        <li class="nav-item">
+                            @* <a class="nav-link text-dark" href="/Home/AboutUs" >About Us</a> *@
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="AboutUs">About Us</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="ContactUs">Contact Us</a>
+                        </li>
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>
