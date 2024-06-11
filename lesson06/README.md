@@ -11,6 +11,11 @@
     - Double check that 'Use a layout page' is selected
     - Controller name is taken automatically from the Model class, verify it's 'CategoriesController'
     - Click Add
+- For VS Code users
+    - Open a terminal and navigate to the folder where your *.csproj file is located
+        - dotnet tool install --global dotnet-aspnet-codegenerator
+        - dotnet add package Microsoft.VisualStudio.Web.CodeGeneration.Design
+        - dotnet aspnet-codegenerator controller -name CategoriesController -m Category-dc ApplicationDbContext --relativeFolderPath Controllers --useDefaultLayout --referenceScriptLibraries
 - Wait a few moments, and verify that:
     - Controller was created under /Controllers
     - 5 new views were created under /Views/Categories
