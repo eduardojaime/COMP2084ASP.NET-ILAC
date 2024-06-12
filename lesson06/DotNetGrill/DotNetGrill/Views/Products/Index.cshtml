@@ -54,6 +54,10 @@
                     {
                         <img src="~/imgs/products/@item.Photo" alt="Product Image" style="max-width: 250px" class="img-thumbnail" />
                     }
+                    else
+                    {
+                        <img src="/images/products/no-image.png" class="img-thumbnail" style="max-width: 250px" />
+                    }
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Category.Name)

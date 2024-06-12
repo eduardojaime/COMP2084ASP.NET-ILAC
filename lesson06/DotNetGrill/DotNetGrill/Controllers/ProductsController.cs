@@ -182,9 +182,6 @@ namespace DotNetGrill.Controllers
         }
         private static string UploadPhoto(IFormFile Photo)
         {
-            // get temp location of uploaded photo
-            var filePath = Path.GetTempFileName();
-
             // use GUID class to ensure unique image name. e.g. logo.jpg => sd98f23723098-logo.jpg
             var fileName = Guid.NewGuid().ToString() + "-" + Photo.FileName;
 
