@@ -24,6 +24,7 @@ namespace DotNetGrillWebUI.Models
         // M to 1 > Every product has only one Category
         public int CategoryId { get; set; } // Foreign Key, it will be added in the DB table as a column
         // Navigation Property (only works in EF and will not be added in the DB)
-        public Category Category { get; set; }
+        // Make Category nullable with the ? operator
+        public Category? Category { get; set; }
     }
 }
