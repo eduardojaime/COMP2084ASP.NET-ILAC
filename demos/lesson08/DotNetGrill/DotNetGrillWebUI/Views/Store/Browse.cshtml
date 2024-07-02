@@ -1,0 +1,31 @@
+﻿@model IEnumerable<DotNetGrillWebUI.Models.Product>
+@{
+    ViewData["Title"] = ViewBag.CategoryName;
+}
+<h1>@ViewBag.CategoryName</h1>
+
+<section class="row card-group">
+    @foreach (var product in Model)
+    {
+        <div class="col-lg-4 mb-3">
+            <div class="card mb-4">
+                <div class="card-body text-center h-100">
+                    <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId">
+                        @product.Name
+                    </a>
+                    <h6>@product.Price.ToString("C")</h6>
+                    @if (String.IsNullOrEmpty(product.Photo))
+                    {
+                        <img src="~/images/products/no-image.png"
+                             class="img-thumbnail" style="max-width: 250px;" />
+                    }
+                    else {
+                        <img src="~/images/products/@product.Photo"
+                             alt="Photo of @product.Name"
+                             class="img-thumbnail" style="max-width: 250px;" />
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</section>

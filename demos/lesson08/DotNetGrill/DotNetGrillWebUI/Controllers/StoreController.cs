@@ -27,5 +27,21 @@ namespace DotNetGrillWebUI.Controllers
         }
 
         // Delete all other methods, they are not needed for this section
+        // GET: Browse/5
+        public async Task<IActionResult> Browse(int id)
+        {
+            // retrieve a list of products by category
+            // LINQ query
+            var products = _context.Products        // SELECT * FROM Products
+                .Where(p => p.CategoryId == id)     // WHERE CategoryId = id
+                .OrderBy(p => p.Name)               // ORDER BY Name
+                .ToList();
+
+            // retrieve the category name
+            ViewBag.CategoryName = _context.Categories.Find(id).Name;
+
+            // return the view with the list of products
+            return View(products);
+        }
     }
 }
