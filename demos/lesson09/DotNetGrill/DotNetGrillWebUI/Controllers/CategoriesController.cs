@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace DotNetGrillWebUI.Controllers
 {
-    [Authorize] // Protects the entire controller
+    [Authorize(Roles = "Administrator")] // Protects the entire controller
     public class CategoriesController : Controller
     {
         private readonly ApplicationDbContext _context;

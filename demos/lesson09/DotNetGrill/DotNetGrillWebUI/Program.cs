@@ -11,7 +11,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+// Add third-party authentication
+builder.Services.AddAuthentication()
+                .AddGoogle(options =>
+                {
+                    options.ClientId = builder.Configuration.GetSection("Authentication:Google")["ClientId"];
+                    options.ClientSecret = builder.Configuration.GetSection("Authentication:Google")["ClientSecret"];
+                });
+
 builder.Services.AddControllersWithViews();
 
 // enables session state (HttpContext.Session)
