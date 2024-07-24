@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using DotNetGrillWebUI.Data;
 using DotNetGrillWebUI.Models;
+using Microsoft.AspNetCore.Authorization;
+using DotNetGrillWebUI.Extensions;
 
 namespace DotNetGrillWebUI.Controllers
 {
@@ -46,7 +48,8 @@ namespace DotNetGrillWebUI.Controllers
 
         // POST: /AddToCart
         // Use [FromForm] to bind the parameters to the form data (input fields)
-        public IActionResult AddToCart([FromForm] int ProductId, [FromForm] int Quantity) {
+        public IActionResult AddToCart([FromForm] int ProductId, [FromForm] int Quantity)
+        {
             // Identify user buying the product
             var customerId = GetCustomerId();
             // Retrieve price from products table
@@ -63,11 +66,12 @@ namespace DotNetGrillWebUI.Controllers
             _context.Carts.Add(cart);
             _context.SaveChanges();
             // Redirect to cart view
-            return Redirect("Cart"); 
+            return Redirect("Cart");
         }
 
         // GET: /Cart
-        public IActionResult Cart() { 
+        public IActionResult Cart()
+        {
             // retrieve customerId
             var customerId = GetCustomerId();
             // query the cart table for all items with the customerId
@@ -83,7 +87,8 @@ namespace DotNetGrillWebUI.Controllers
         }
 
         // GET: /RemoveFromCart/5
-        public IActionResult RemoveFromCart(int id) { 
+        public IActionResult RemoveFromCart(int id)
+        {
             // Retrieve item from cart
             var cart = _context.Carts.Find(id);
             // Remove from carts collection
@@ -94,17 +99,53 @@ namespace DotNetGrillWebUI.Controllers
             return RedirectToAction("Cart");
         }
 
+        // GET /Checkout
+        [Authorize]
+        public IActionResult Checkout()
+        {
+            return View();
+        }
+
+        // POST /Checkout (Form data)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        // Model binder initializes an object of type Order and binds the form data to it
+        public IActionResult Checkout(
+            [Bind("FirstName,LastName,Address,City,Province,PostalCode")] Order order)
+        {
+            // populate 3 special fields: customerid, datecreated, total
+            order.CustomerId = GetCustomerId();
+            order.DateCreated = DateTime.UtcNow; // always use UTC time in DBs
+            // calculate total by retrieving all cart items and summing the price * quantity for each
+            order.Total = _context.Carts.Where(c => c.CustomerId == order.CustomerId)
+                                        .Sum(c => (c.Price * c.Quantity));
+            // store order in session to hold temporarily until payment is made
+            HttpContext.Session.SetObject("Order", order);
+            // redirect to payment page
+            return RedirectToAction("Payment");
+        }
+
+        // TODO GET /Payment
+        public IActionResult Payment()
+        {
+            return View();
+        }
+
         // Helper Method
-        private string GetCustomerId() {
+        private string GetCustomerId()
+        {
             // Initialize variable
             string customerId = string.Empty;
             // Try to retrieve CustomerId from session
-            if (String.IsNullOrEmpty(HttpContext.Session.GetString("CustomerId"))) {
+            if (String.IsNullOrEmpty(HttpContext.Session.GetString("CustomerId")))
+            {
                 if (User.Identity.IsAuthenticated)
                 {
                     customerId = User.Identity.Name;
                 }
-                else { 
+                else
+                {
                     customerId = Guid.NewGuid().ToString();
                 }
                 HttpContext.Session.SetString("CustomerId", customerId);
