@@ -9,17 +9,22 @@ using DotNetGrillWebUI.Data;
 using DotNetGrillWebUI.Models;
 using Microsoft.AspNetCore.Authorization;
 using DotNetGrillWebUI.Extensions;
+using Stripe.Checkout;
+using Stripe;
 
 namespace DotNetGrillWebUI.Controllers
 {
     // This controller will handle shopping cart experience
     public class StoreController : Controller
     {
+        // Dependency injection
         private readonly ApplicationDbContext _context;
-
-        public StoreController(ApplicationDbContext context)
+        private readonly IConfiguration _configuration; // create private field to hold instance
+        // modify constructor to require an IConfiguration instance
+        public StoreController(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration; // assign instance to private field
         }
 
         // GET: Store
@@ -126,11 +131,66 @@ namespace DotNetGrillWebUI.Controllers
             return RedirectToAction("Payment");
         }
 
-        // TODO GET /Payment
+        // GET /Payment
         public IActionResult Payment()
         {
+            // retrieve order from session
+            var order = HttpContext.Session.GetObject<Order>("Order");
+            ViewBag.TotalAmount = order.Total;
+            // Get configuration object via DI
+            ViewBag.PublishableKey = _configuration["Payments:Stripe:PublishableKey"];
+
             return View();
         }
+
+        // POST handler for /Store/Payment
+        [HttpPost]
+        public IActionResult Payment(string stripeToken)
+        {
+            // get order from session variable
+            var order = HttpContext.Session.GetObject<DotNetGrillWebUI.Models.Order>("Order");
+            // retrieve stripe config > Secret Key
+            StripeConfiguration.ApiKey = _configuration["Payments:Stripe:SecretKey"];
+            // create a stripe session object options
+            var options = new SessionCreateOptions
+            {
+                LineItems = new List<SessionLineItemOptions>
+                {
+                  new SessionLineItemOptions
+                  {
+                    PriceData = new SessionLineItemPriceDataOptions
+                    {
+                        UnitAmount = (long?)(order.Total * 100),
+                        Currency = "cad",
+                        ProductData = new SessionLineItemPriceDataProductDataOptions
+                        {
+                            Name = "DotNetGrill Purchase"
+                        },
+                    },
+                    Quantity = 1
+                  },
+                },
+                PaymentMethodTypes = new List<string>
+                {
+                  "card"
+                },
+                Mode = "payment",
+                SuccessUrl = "https://" + Request.Host + "/Store/SaveOrder",
+                CancelUrl = "https://" + Request.Host + "/Store/Cart",
+            };
+
+            // create a stripe service object which will help us initialize the session
+            var service = new SessionService();
+            // initialize the session object
+            Session session = service.Create(options);
+
+            // pass and id back to the view (handle by javascript)
+            return Json(new { id = session.Id });
+        }
+
+        // TODO: Implement SaveOrder method
+
+        // TODO: Implement Order History
 
         // Helper Method
         private string GetCustomerId()
