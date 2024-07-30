@@ -1,0 +1,68 @@
+﻿@model IEnumerable<DotNetGrillWebUI.Models.Cart>
+
+@{
+    ViewData["Title"] = "Cart";
+}
+
+<h1>My Cart</h1>
+
+@* <p>
+    <a asp-action="Create">Create New</a>
+</p> *@
+<table class="table">
+    <thead>
+        <tr>
+            @* <th>
+                @Html.DisplayNameFor(model => model.CustomerId)
+            </th> *@
+            <th>
+                @Html.DisplayNameFor(model => model.Product)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Price)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Quantity)
+            </th>
+            @* <th>
+                @Html.DisplayNameFor(model => model.DateCreated)
+            </th> *@
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            @* <td>
+                @Html.DisplayFor(modelItem => item.CustomerId)
+            </td> *@
+            <td>
+                @Html.DisplayFor(modelItem => item.Product.Name)
+            </td>
+            <td>
+                @item.Price.ToString("C")
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Quantity)
+            </td>
+            @* <td>
+                @Html.DisplayFor(modelItem => item.DateCreated)
+            </td> *@
+            <td>
+                @* <a asp-action="Edit" asp-route-id="@item.CartId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.CartId">Details</a> | *@
+                <a asp-action="RemoveFromCart" asp-route-id="@item.CartId">Delete</a>
+            </td>
+        </tr>
+}
+        <tr>
+            <td colspan="2">Total:</td>
+            <td>@ViewBag.TotalAmount.ToString("C")</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="col-12 mb-auto text-info">
+    <a class="btn btn-info" asp-action="Index">Continue Shopping</a>
+    <a class="btn btn-success" asp-action="Checkout">Checkout</a>
+</div>
