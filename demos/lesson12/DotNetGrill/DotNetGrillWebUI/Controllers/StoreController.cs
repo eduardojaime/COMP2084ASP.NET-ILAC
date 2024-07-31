@@ -175,7 +175,7 @@ namespace DotNetGrillWebUI.Controllers
                   "card"
                 },
                 Mode = "payment",
-                SuccessUrl = "https://" + Request.Host + "/Store/SaveOrder",
+                SuccessUrl = "https://" + Request.Host + "/Store/SaveOrder", // Request.Host = localhost:5001 or domain name when deployed
                 CancelUrl = "https://" + Request.Host + "/Store/Cart",
             };
 
@@ -188,9 +188,35 @@ namespace DotNetGrillWebUI.Controllers
             return Json(new { id = session.Id });
         }
 
-        // TODO: Implement SaveOrder method
-
-        // TODO: Implement Order History
+        // Implement SaveOrder method
+        // GET /Store/SaveOrder
+        public IActionResult SaveOrder()
+        {
+            // get order from session
+            var order = HttpContext.Session.GetObject<Order>("Order");
+            // save it to the database
+            _context.Order.Add(order);
+            _context.SaveChanges();
+            // save order details (convert records in Carts to OderItems)
+            var customerId = GetCustomerId();
+            var carts = _context.Carts.Where(c => c.CustomerId == customerId).ToList();
+            foreach (var cart in carts)
+            {
+                var orderItem = new OrderItem()
+                {
+                    OrderId = order.OrderId,
+                    ProductId = cart.ProductId,
+                    Quantity = cart.Quantity,
+                    Price = cart.Price
+                };
+                _context.OrderItems.Add(orderItem); // add new record to OrderItems table
+                // clear the cart
+                _context.Carts.Remove(cart); // remove existing cart record, no longer needed
+            }
+            _context.SaveChanges();
+            // redirect to order history > /Orders/Details/{id}
+            return RedirectToAction("Details", "Orders", new { @id = order.OrderId });
+        }
 
         // Helper Method
         private string GetCustomerId()
