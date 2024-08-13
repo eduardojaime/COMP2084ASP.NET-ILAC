@@ -1,0 +1,22 @@
+﻿@{
+    ViewData["Title"] = "Contact Us";
+}
+<h1>Contact Us</h1>
+<!-- Reference https://www.w3schools.com/bootstrap5/bootstrap_forms.php -->
+<p>For any inquiries or feedback, please contact us by filling in the form below:</p>
+<form method="post">
+    <fieldset>
+        <label class="form-label">Name: </label>
+        <input class="form-control" id="name" />
+    </fieldset>
+    <fieldset>
+        <label class="form-label">Email: </label>
+        <input class="form-control" id="email" type="email" />
+    </fieldset>
+    <fieldset>
+        <label class="form-label">Message: </label>
+        <textarea class="form-control" id="message" type="text"></textarea>
+    </fieldset>
+    <hr />
+    <button class="btn btn-primary">Submit</button>
+</form>
