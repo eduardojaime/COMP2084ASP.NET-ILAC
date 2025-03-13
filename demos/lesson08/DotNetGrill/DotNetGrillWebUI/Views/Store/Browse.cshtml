@@ -1,0 +1,45 @@
+﻿@model IEnumerable<DotNetGrillWebUI.Models.Product>
+@{
+    if (ViewBag.categoryName == null)
+    {
+        ViewData["Title"] = "Category";
+    }
+    else
+    {
+        ViewData["Title"] = ViewBag.categoryName;
+    }
+}
+@if (ViewBag.categoryName == null)
+{
+    <h1>Category</h1>
+}
+else
+{
+    <h1>@ViewBag.categoryName</h1>
+}
+<section class="row card-group">
+    @foreach (var product in Model)
+    {
+        <div class="col-lg-4 mb-3">
+            <div class="card mb-4">
+                <div class="card-body text-center h-100">
+                    <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId">
+                        @product.Name
+                    </a>
+                    <h6>@product.Price.ToString("C")</h6>
+                    <img src="~/images/products/@product.Photo"
+                         alt="Photo of @product.Name"
+                         class="img-thumbnail" style="max-width: 250px;" />
+                    <form method="post" action="/Store/AddToCart">
+                        <input type="hidden" id="ProductId" name="ProductId" value="@product.ProductId" />
+                        <div>
+                            <label class="form-control" for="Quantity">Quantity: </label>
+                            <input name="Quantity" id="Quantity" required type="number" min="1" max="999" />
+                        </div>
+                        <button class="btn btn-primary">Add to Cart</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</section>
