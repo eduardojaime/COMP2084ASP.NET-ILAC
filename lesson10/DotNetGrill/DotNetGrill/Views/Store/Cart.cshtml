@@ -10,6 +10,9 @@
     <thead>
         <tr>
             <th>
+                @Html.DisplayNameFor(model => model.Product.Photo)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.Product)
             </th>
             <th>
@@ -25,6 +28,17 @@
         @foreach (var item in Model)
         {
             <tr>
+                <td>
+                    @if (item.Product.Photo != null)
+                    {
+                        <img src="~/images/products/@item.Product.Photo" alt="Product Image" style="max-width: 250px"
+                            class="img-thumbnail" />
+                    }
+                    else
+                    {
+                        <img src="/images/products/no-image.png" class="img-thumbnail" style="max-width: 250px" />
+                    }
+                </td>
                 <td>
                     <a asp-controller="Products" asp-action="Details" asp-route-id="@item.ProductId">
                         @item.Product.Name

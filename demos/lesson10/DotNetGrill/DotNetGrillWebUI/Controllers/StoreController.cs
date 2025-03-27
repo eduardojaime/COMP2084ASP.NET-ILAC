@@ -70,13 +70,33 @@ namespace DotNetGrillWebUI.Controllers
         // GET handler for /Store/Cart
         public IActionResult Cart()
         {
+            // strongly typed syntax
             string customerId = GetCustomerId();
             // return a list of elements in the carts table by customerId
-            var carts = _context.Carts
-                        .Where(c => c.CustomerId == customerId)
-                        .OrderByDescending(c => c.DateCreated)
+            var carts = _context.Carts                              // SELECT * FROM Carts c
+                        .Include(c => c.Product)                    // JOIN Products p ON c.ProductId = p.ProductId
+                        .Where(c => c.CustomerId == customerId)     // WHERE c.CustomerId = @customerId
+                        .OrderByDescending(c => c.DateCreated)      // ORDER BY c.DateCreated DESC
                         .ToList();
+            // Calculate Total and pass in ViewBag object
+            // for each cart item calculate the result of multiplying price * quantity, and then calculate summatory
+            var total = carts.Sum(c => (c.Price * c.Quantity));
+            // ViewBag is a dynamic object, properties need to match exactly as we are naming them here in order to access their values in the View
+            ViewBag.TotalAmount = total;
+
             return View(carts);
+        }
+
+        // GET handler for /Store/RemoveFromCart/ID
+        public IActionResult RemoveFromCart(int id) {
+            // retrieve the cart element
+            var cartItem = _context.Carts.Find(id);
+            // remove it from the carts list
+            _context.Carts.Remove(cartItem);
+            // save changes
+            _context.SaveChanges();
+            // redirect
+            return RedirectToAction("Cart");
         }
 
         /// <summary>
