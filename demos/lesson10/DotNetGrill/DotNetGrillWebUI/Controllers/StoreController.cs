@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using DotNetGrillWebUI.Data;
 using DotNetGrillWebUI.Models;
+using Microsoft.AspNetCore.Authorization;
+using DotNetGrillWebUI.Extensions;
 
 namespace DotNetGrillWebUI.Controllers
 {
@@ -97,6 +99,46 @@ namespace DotNetGrillWebUI.Controllers
             _context.SaveChanges();
             // redirect
             return RedirectToAction("Cart");
+        }
+
+        // GET handler for /Store/Checkout
+        // Note: This will be a protected page, only users with an account can access it
+        [Authorize]
+        public IActionResult Checkout() { 
+            return View();
+        }
+
+        // POST handler for /Store/Checkout
+        // This is a protected action method, additionally use AntiForgeryToken to prevent POST requests from different sources than the form
+        [HttpPost] // this action method responds to POST only
+        [Authorize] // protected with login
+        [ValidateAntiForgeryToken] // makes sure only our form can send requests to this method
+        // Object binder Bind[()] receives values from form and uses them to create an instance of Order
+        public IActionResult Checkout([Bind("FirstName,LastName,Address,City,Province,PostalCode")] Order order) { 
+            // Populate 3 special fields programmatically
+            var customerId = GetCustomerId();
+            order.DateCreated = DateTime.UtcNow; // always use UTC time
+            order.CustomerId = customerId;
+
+            var carts = _context.Carts
+                        .Where(c => c.CustomerId == customerId)  
+                        .OrderByDescending(c => c.DateCreated)
+                        .ToList();
+            // Calculate Total and pass in ViewBag object
+            // for each cart item calculate the result of multiplying price * quantity, and then calculate summatory
+            var total = carts.Sum(c => (c.Price * c.Quantity));
+            order.Total = total;
+
+            // Store order in session, we will save to the DB once payment is completed
+            HttpContext.Session.SetObject("Order", order);
+
+            // Redirect to Payment page
+            return RedirectToAction("Payment");
+        }
+
+        // GET handler for /Store/Payment
+        public IActionResult Payment() {
+            return View();
         }
 
         /// <summary>
