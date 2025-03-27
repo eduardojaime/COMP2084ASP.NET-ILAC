@@ -9,16 +9,21 @@ using DotNetGrillWebUI.Data;
 using DotNetGrillWebUI.Models;
 using Microsoft.AspNetCore.Authorization;
 using DotNetGrillWebUI.Extensions;
+using Stripe;
+using Stripe.Checkout;
 
 namespace DotNetGrillWebUI.Controllers
 {
     public class StoreController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public StoreController(ApplicationDbContext context)
+        // Use DI to receive an instance of configuration object from the app
+        public StoreController(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         // GET: Store
@@ -90,7 +95,8 @@ namespace DotNetGrillWebUI.Controllers
         }
 
         // GET handler for /Store/RemoveFromCart/ID
-        public IActionResult RemoveFromCart(int id) {
+        public IActionResult RemoveFromCart(int id)
+        {
             // retrieve the cart element
             var cartItem = _context.Carts.Find(id);
             // remove it from the carts list
@@ -104,7 +110,8 @@ namespace DotNetGrillWebUI.Controllers
         // GET handler for /Store/Checkout
         // Note: This will be a protected page, only users with an account can access it
         [Authorize]
-        public IActionResult Checkout() { 
+        public IActionResult Checkout()
+        {
             return View();
         }
 
@@ -114,14 +121,15 @@ namespace DotNetGrillWebUI.Controllers
         [Authorize] // protected with login
         [ValidateAntiForgeryToken] // makes sure only our form can send requests to this method
         // Object binder Bind[()] receives values from form and uses them to create an instance of Order
-        public IActionResult Checkout([Bind("FirstName,LastName,Address,City,Province,PostalCode")] Order order) { 
+        public IActionResult Checkout([Bind("FirstName,LastName,Address,City,Province,PostalCode")] Order order)
+        {
             // Populate 3 special fields programmatically
             var customerId = GetCustomerId();
             order.DateCreated = DateTime.UtcNow; // always use UTC time
             order.CustomerId = customerId;
 
             var carts = _context.Carts
-                        .Where(c => c.CustomerId == customerId)  
+                        .Where(c => c.CustomerId == customerId)
                         .OrderByDescending(c => c.DateCreated)
                         .ToList();
             // Calculate Total and pass in ViewBag object
@@ -137,9 +145,90 @@ namespace DotNetGrillWebUI.Controllers
         }
 
         // GET handler for /Store/Payment
-        public IActionResult Payment() {
+        public IActionResult Payment()
+        {
+            var order = HttpContext.Session.GetObject<Order>("Order");
+            // Pass total in cents for stripe to handle
+            ViewBag.Total = order.Total * 100;
+            // Pass publishable key for javascript to work
+            ViewBag.PublishableKey = _configuration["Payments:Stripe:PublishableKey"];
             return View();
         }
+
+        // POST handler for /Store/Payment
+        [HttpPost]
+        public IActionResult Payment(string stripeToken)
+        {
+            // get order from session variable
+            var order = HttpContext.Session.GetObject<Order>("Order");
+            // retrieve stripe config > Secret Key
+            StripeConfiguration.ApiKey = _configuration["Payments:Stripe:SecretKey"];
+            // create a stripe session object options
+            var options = new SessionCreateOptions
+            {
+                LineItems = new List<SessionLineItemOptions>
+                {
+                  new SessionLineItemOptions
+                  {
+                    PriceData = new SessionLineItemPriceDataOptions
+                    {
+                        UnitAmount = (long?)(order.Total * 100),
+                        Currency = "cad",
+                        ProductData = new SessionLineItemPriceDataProductDataOptions
+                        {
+                            Name = "DotNetGrill Purchase"
+                        },
+                    },
+                    Quantity = 1
+                  },
+                },
+                PaymentMethodTypes = new List<string>
+                {
+                  "card"
+                },
+                Mode = "payment",
+                SuccessUrl = "https://" + Request.Host + "/Store/SaveOrder",
+                CancelUrl = "https://" + Request.Host + "/Store/Cart",
+            };
+
+            // create a stripe service object which will help us initialize the session
+            var service = new SessionService();
+            // initialize the session object
+            Session session = service.Create(options);
+
+            // pass and id back to the view (handle by javascript)
+            return Json(new { id = session.Id });
+        }
+
+        // GET handler for /Store/SaveOrder
+        public IActionResult SaveOrder()
+        {
+            // retrieve order object
+            var order = HttpContext.Session.GetObject<Order>("Order");
+            // save it in the db
+            _context.Orders.Add(order);
+            _context.SaveChanges();
+            // get customer id and cart items
+            var customerId = GetCustomerId();
+            var carts = _context.Carts.Where(c => c.CustomerId == customerId);
+            // for loop to create corresponding orderitem records and clear carts
+            foreach (var cartItem in carts) {
+                var orderItem = new OrderItem
+                {
+                    OrderId = order.OrderId,
+                    ProductId = cartItem.ProductId,
+                    Quantity = cartItem.Quantity,
+                    Price = cartItem.Price,
+                };
+                _context.OrderItems.Add(orderItem);
+                _context.Carts.Remove(cartItem);
+            }
+            _context.SaveChanges();
+
+            //redirect to order details page
+            return RedirectToAction("Details", "Order", new { @id = order.OrderId });
+        }
+
 
         /// <summary>
         /// This method will use the session object to store a value to identify the user visiting the site
