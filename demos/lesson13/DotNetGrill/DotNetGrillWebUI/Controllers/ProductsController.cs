@@ -9,6 +9,7 @@ using DotNetGrillWebUI.Data;
 using DotNetGrillWebUI.Models;
 using Microsoft.AspNetCore.Authorization;
 
+// This is a MVC controller since it returns Views (HTML)
 namespace DotNetGrillWebUI.Controllers
 {
     [Authorize(Roles = "Administrator")]
